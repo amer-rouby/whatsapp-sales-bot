@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+graphify-out/
+.graphifyignore

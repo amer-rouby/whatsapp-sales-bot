@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — the ONLY place colors, radius and fonts are defined.
+ * Components use semantic utilities (bg-surface, text-muted, border-border, bg-primary ...),
+ * never raw colors, so a re-brand or dark mode is a change here only.
+ */
+@theme {
+  --font-sans: var(--font-cairo), system-ui, sans-serif;
+
+  --color-background: oklch(0.985 0.002 250);
+  --color-surface: oklch(1 0 0);
+  --color-foreground: oklch(0.22 0.02 260);
+  --color-muted: oklch(0.55 0.02 260);
+  --color-border: oklch(0.92 0.005 260);
+
+  --color-primary: oklch(0.6 0.15 155); /* WhatsApp-like green */
+  --color-primary-hover: oklch(0.54 0.15 155);
+  --color-primary-foreground: oklch(1 0 0);
+
+  --color-secondary: oklch(0.96 0.005 260);
+  --color-secondary-hover: oklch(0.93 0.005 260);
+
+  --color-success: oklch(0.6 0.15 155);
+  --color-success-soft: oklch(0.95 0.05 155);
+  --color-warning: oklch(0.7 0.15 75);
+  --color-warning-soft: oklch(0.96 0.05 85);
+  --color-danger: oklch(0.58 0.2 25);
+  --color-danger-soft: oklch(0.96 0.03 25);
+
+  --radius-card: 0.875rem;
+  --radius-control: 0.625rem;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}

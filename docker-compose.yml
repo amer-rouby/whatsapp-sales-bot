@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: salesbot-postgres
+    environment:
+      POSTGRES_DB: salesbot
+      POSTGRES_USER: salesbot
+      POSTGRES_PASSWORD: salesbot
+    ports:
+      - "5442:5432" # 5432/5433 are taken by a PostgreSQL installed on this machine
+    volumes:
+      - salesbot-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salesbot -d salesbot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  salesbot-pgdata:
