@@ -7,4 +7,6 @@ export * from "./empty-state";
 export * from "./field";
 export * from "./input";
 export * from "./page-header";
+export * from "./select";
+export * from "./stat-card";
 export * from "./textarea";

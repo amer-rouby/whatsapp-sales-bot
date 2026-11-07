@@ -1,38 +1,137 @@
 @import "tailwindcss";
 
 /*
- * Design tokens — the ONLY place colors, radius and fonts are defined.
- * Components use semantic utilities (bg-surface, text-muted, border-border, bg-primary ...),
- * never raw colors, so a re-brand or dark mode is a change here only.
+ * Design tokens — the ONLY place colors, radius, shadows and fonts are defined.
+ * Same identity as the Tawasol / Aqarat web apps: navy + gold, with a maroon theme.
+ * Screens use brand-* / gold-* and the semantic names below; never raw colors.
  */
 @theme {
-  --font-sans: var(--font-cairo), system-ui, sans-serif;
+  --font-sans: var(--font-tajawal), "Dubai", "Segoe UI", system-ui, sans-serif;
 
-  --color-background: oklch(0.985 0.002 250);
-  --color-surface: oklch(1 0 0);
-  --color-foreground: oklch(0.22 0.02 260);
-  --color-muted: oklch(0.55 0.02 260);
-  --color-border: oklch(0.92 0.005 260);
+  /* navy (default theme) */
+  --color-brand-50: #f1f3fa;
+  --color-brand-100: #dce1f1;
+  --color-brand-200: #b3bcdd;
+  --color-brand-300: #8593c6;
+  --color-brand-400: #5766a8;
+  --color-brand-500: #34428a;
+  --color-brand-600: #2a3470;
+  --color-brand-700: #232c54;
+  --color-brand-800: #1a2142;
+  --color-brand-900: #121730;
 
-  --color-primary: oklch(0.6 0.15 155); /* WhatsApp-like green */
-  --color-primary-hover: oklch(0.54 0.15 155);
-  --color-primary-foreground: oklch(1 0 0);
+  --color-gold-50: #fbf6e6;
+  --color-gold-100: #f4e7b8;
+  --color-gold-300: #e3c766;
+  --color-gold-500: #c9a227;
+  --color-gold-600: #b08a1c;
+  --color-gold-700: #8a6d12;
 
-  --color-secondary: oklch(0.96 0.005 260);
-  --color-secondary-hover: oklch(0.93 0.005 260);
+  /* semantic names used by the components */
+  --color-background: #f5f6f9; /* page */
+  --color-surface: #ffffff; /* cards, inputs */
+  --color-foreground: #1e2433;
+  --color-muted: #6b7280;
+  --color-border: #e3e6ee;
 
-  --color-success: oklch(0.6 0.15 155);
-  --color-success-soft: oklch(0.95 0.05 155);
-  --color-warning: oklch(0.7 0.15 75);
-  --color-warning-soft: oklch(0.96 0.05 85);
-  --color-danger: oklch(0.58 0.2 25);
-  --color-danger-soft: oklch(0.96 0.03 25);
+  --color-primary: var(--color-brand-600);
+  --color-primary-hover: var(--color-brand-700);
+  --color-primary-soft: var(--color-brand-50);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #eef0f5;
+  --color-secondary-hover: #e3e6ee;
+
+  --color-success: #15803d;
+  --color-success-soft: #e8f6ee;
+  --color-warning: #b45309;
+  --color-warning-soft: #fdf3e2;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fdecec;
+
+  /* WhatsApp look for the chat simulator (theme-independent on purpose: it mimics the real app) */
+  --color-chat-out: #d9fdd3;
+  --color-chat-ink: #111b21;
+  --color-chat-meta: #667781;
+  --color-chat-read: #53bdeb;
+  --color-chat-dots: #8696a0;
+  --color-chat-wall: #efeae2;
 
   --radius-card: 0.875rem;
   --radius-control: 0.625rem;
+  --shadow-card: 0 1px 2px rgb(30 27 36 / 0.06), 0 4px 14px rgb(30 27 36 / 0.05);
+  --shadow-raised: 0 8px 30px rgb(18 23 48 / 0.12);
+}
+
+/* Maroon theme: the same tokens re-pointed. Nothing else in the app knows about themes. */
+:root[data-theme="maroon"] {
+  --color-brand-50: #fbf1f4;
+  --color-brand-100: #f5dce3;
+  --color-brand-200: #e8b3c2;
+  --color-brand-300: #d68aa0;
+  --color-brand-400: #b8506f;
+  --color-brand-500: #9a1f44;
+  --color-brand-600: #7a1232;
+  --color-brand-700: #590d24;
+  --color-brand-800: #430a1b;
+  --color-brand-900: #2e0712;
+  --color-background: #f9f6f7;
+  --color-border: #ece4e7;
+}
+
+/* ===== small repeated building blocks ===== */
+@utility card {
+  @apply rounded-(--radius-card) border border-border bg-surface shadow-(--shadow-card);
+}
+
+@utility field-input {
+  @apply block w-full rounded-control border border-border bg-surface px-3 py-2.5 text-sm text-foreground
+         placeholder:text-muted/70 transition
+         focus:border-primary focus:ring-2 focus:ring-primary-soft focus:outline-none
+         disabled:cursor-not-allowed disabled:opacity-60
+         aria-invalid:border-danger aria-invalid:ring-danger-soft;
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  @apply bg-background font-sans text-foreground antialiased;
+}
+
+/* LTR values (numbers, phones, dates, codes) inside RTL text keep their own direction */
+[data-ltr] {
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+html[dir="rtl"] [data-ltr] {
+  text-align: right;
+}
+
+/* WhatsApp-like chat wallpaper for the simulator (pure CSS, no image) */
+@utility chat-wallpaper {
+  background-color: var(--color-chat-wall);
+  background-image: radial-gradient(rgb(0 0 0 / 0.035) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@utility animate-fade-up {
+  animation: fade-up 0.25s ease-out both;
+}
+
+/* people who ask their OS for less motion get none */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

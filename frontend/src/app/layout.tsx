@@ -1,25 +1,31 @@
 import type { Metadata } from "next";
-import { Cairo } from "next/font/google";
+import { Tajawal } from "next/font/google";
+import { directionOf } from "@/shared/i18n/config";
+import { I18nProvider } from "@/shared/i18n/provider";
+import { dictionaryFor } from "@/shared/i18n/server";
+import { getPreferences } from "@/shared/preferences/server";
 import "./globals.css";
 
-const cairo = Cairo({
-  variable: "--font-cairo",
+const tajawal = Tajawal({
+  variable: "--font-tajawal",
   subsets: ["arabic", "latin"],
+  weight: ["400", "500", "700", "800"],
 });
 
-export const metadata: Metadata = {
-  title: "بياع — لوحة التحكم",
-  description: "موظف مبيعات ذكي على واتساب",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale } = await getPreferences();
+  const t = dictionaryFor(locale);
+  return { title: { default: t.app.name, template: `%s · ${t.app.name}` }, description: t.app.tagline };
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Language and theme come from cookies, so the very first paint has the right direction and colors.
+  const { locale, theme } = await getPreferences();
   return (
-    <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
-      <body className="min-h-full font-sans">{children}</body>
+    <html lang={locale} dir={directionOf(locale)} data-theme={theme} className={`${tajawal.variable} h-full`}>
+      <body className="min-h-full">
+        <I18nProvider locale={locale}>{children}</I18nProvider>
+      </body>
     </html>
   );
 }
