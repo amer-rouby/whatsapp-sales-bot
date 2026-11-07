@@ -3,21 +3,24 @@ import Link from "next/link";
 import { cn } from "@/shared/lib/cn";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-control font-semibold transition-colors " +
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary " +
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-control font-bold transition " +
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500 " +
     "disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
+        primary: "bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover",
+        gold: "bg-gold-500 text-brand-900 shadow-sm hover:bg-gold-600",
+        outline: "border border-primary bg-surface text-primary hover:bg-primary-soft",
         secondary: "bg-secondary text-foreground hover:bg-secondary-hover",
         ghost: "text-foreground hover:bg-secondary",
-        danger: "bg-danger text-primary-foreground hover:opacity-90",
+        danger: "text-danger hover:bg-danger-soft",
       },
       size: {
-        sm: "h-8 px-3 text-sm",
+        sm: "h-8 px-3 text-xs",
         md: "h-10 px-4 text-sm",
         lg: "h-12 px-6 text-base",
+        icon: "size-9",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },

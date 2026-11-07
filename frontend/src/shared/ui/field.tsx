@@ -15,13 +15,13 @@ export interface FieldProps {
 export function Field({ label, htmlFor, hint, error, required, className, children }: FieldProps) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={htmlFor} className="text-sm font-semibold">
+      <label htmlFor={htmlFor} className="text-sm font-bold text-brand-800">
         {label}
         {required && <span className="ms-1 text-danger">*</span>}
       </label>
       {children}
       {error ? (
-        <p className="text-xs text-danger" role="alert">
+        <p className="text-xs font-bold text-danger" role="alert">
           {error}
         </p>
       ) : (
