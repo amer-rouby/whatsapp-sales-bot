@@ -68,6 +68,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/{id}/status": {
         parameters: {
             query?: never;
@@ -92,6 +108,54 @@ export interface paths {
             cookie?: never;
         };
         get: operations["list_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
         put?: never;
         post?: never;
         delete?: never;
@@ -138,6 +202,21 @@ export interface components {
         SimulatorReply: {
             reply?: string;
         };
+        LoginRequest: {
+            email: string;
+            password: string;
+        };
+        LoginResponse: {
+            token?: string;
+            /** Format: date-time */
+            expiresAt?: string;
+            user?: components["schemas"]["UserResponse"];
+        };
+        UserResponse: {
+            email?: string;
+            name?: string;
+            role?: string;
+        };
         StatusChange: {
             /** @enum {string} */
             status: "NEW" | "CONFIRMED" | "SHIPPED" | "CANCELLED";
@@ -164,6 +243,37 @@ export interface components {
             items?: components["schemas"]["OrderLineResponse"][];
             /** Format: date-time */
             createdAt?: string;
+        };
+        ConversationSummary: {
+            /** Format: uuid */
+            id?: string;
+            customerName?: string;
+            customerWaId?: string;
+            simulated?: boolean;
+            lastMessage?: string;
+            /** @enum {string} */
+            lastDirection?: "INBOUND" | "OUTBOUND";
+            /** Format: date-time */
+            lastMessageAt?: string;
+            /** Format: int64 */
+            messageCount?: number;
+        };
+        ChatMessage: {
+            /** Format: uuid */
+            id?: string;
+            /** @enum {string} */
+            direction?: "INBOUND" | "OUTBOUND";
+            body?: string;
+            /** Format: date-time */
+            sentAt?: string;
+        };
+        ConversationDetail: {
+            /** Format: uuid */
+            id?: string;
+            customerName?: string;
+            customerWaId?: string;
+            simulated?: boolean;
+            messages?: components["schemas"]["ChatMessage"][];
         };
     };
     responses: never;
@@ -358,6 +468,30 @@ export interface operations {
             };
         };
     };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LoginResponse"];
+                };
+            };
+        };
+    };
     changeStatus: {
         parameters: {
             query?: never;
@@ -400,6 +534,68 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["OrderResponse"][];
+                };
+            };
+        };
+    };
+    list_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationSummary"][];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationDetail"];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserResponse"];
                 };
             };
         };

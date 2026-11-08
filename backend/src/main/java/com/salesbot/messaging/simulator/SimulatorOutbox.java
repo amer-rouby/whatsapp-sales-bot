@@ -1,5 +1,6 @@
 package com.salesbot.messaging.simulator;
 
+import com.salesbot.messaging.SimulatorChannel;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class SimulatorOutbox {
 
     /** Fake business number used by every simulator chat. */
-    public static final String SIMULATOR_NUMBER = "SIMULATOR";
+    public static final String SIMULATOR_NUMBER = SimulatorChannel.PHONE_NUMBER_ID;
 
     private final ConcurrentHashMap<String, BlockingQueue<String>> replies = new ConcurrentHashMap<>();
 

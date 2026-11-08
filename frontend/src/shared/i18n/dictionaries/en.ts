@@ -128,9 +128,17 @@ export const en: Dictionary = {
   conversations: {
     title: "Conversations",
     description: "Everything customers wrote and the bot answered",
-    columns: { customer: "Customer", lastMessage: "Last message", time: "Time" },
     emptyTitle: "No conversations yet",
     emptyDescription: "When a customer messages you on WhatsApp it will appear here",
+    loadError: "Couldn't load conversations",
+    selectTitle: "Pick a conversation",
+    selectDescription: "Choose a customer from the list to see the whole chat",
+    back: "Back to conversations",
+    simulated: "Test",
+    botReplied: "Bot replied",
+    botLabel: "Bayaa",
+    messageCount: "{count} messages",
+    readOnlyNote: "This chat updates by itself. Replying to the customer yourself is coming soon.",
   },
   simulator: {
     title: "Try the bot",

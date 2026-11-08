@@ -14,6 +14,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     boolean existsByWaMessageId(String waMessageId);
 
+    /** The latest messages of a conversation, newest first (the dashboard reverses them). */
+    List<Message> findByConversation_IdOrderByCreatedAtDesc(UUID conversationId, Limit limit);
+
     /** Newest first; callers reverse it to get chronological history. */
     List<Message> findByConversationOrderByCreatedAtDesc(Conversation conversation, Limit limit);
 

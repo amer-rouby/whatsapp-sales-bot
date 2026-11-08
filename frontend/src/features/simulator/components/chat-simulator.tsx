@@ -1,10 +1,10 @@
 "use client";
 
-import { Bot, Check, CheckCheck, RotateCcw, SendHorizontal, User } from "lucide-react";
+import { Bot, RotateCcw, SendHorizontal, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ChatBubble, ChatNotice } from "@/shared/components/chat-bubble";
 import { useI18n } from "@/shared/i18n/provider";
 import { ApiError } from "@/shared/lib/api-client";
-import { cn } from "@/shared/lib/cn";
 import { errorMessage } from "@/shared/lib/errors";
 import { formatTime } from "@/shared/lib/format";
 import { Button, Card, Input } from "@/shared/ui";
@@ -115,31 +115,18 @@ export function ChatSimulator() {
         )}
         {messages.map((m) =>
           m.author === "system" ? (
-            <p key={m.id} className="self-center rounded-lg bg-danger-soft px-3 py-1.5 text-xs font-bold text-danger">
+            <ChatNotice key={m.id} tone="danger">
               {m.text}
-            </p>
+            </ChatNotice>
           ) : (
-            <div
+            // the customer is "me" in this view (you play the customer)
+            <ChatBubble
               key={m.id}
-              className={cn(
-                "max-w-[78%] animate-fade-up rounded-2xl px-3 pb-1.5 pt-2 text-sm shadow-sm",
-                // the customer is "me" in this view → end side, WhatsApp green; the bot → start side, white
-                m.author === "customer"
-                  ? "self-end rounded-ee-sm bg-chat-out text-chat-ink"
-                  : "self-start rounded-es-sm bg-white text-chat-ink",
-              )}
-            >
-              <p dir="auto" className="whitespace-pre-wrap text-start leading-relaxed">{m.text}</p>
-              <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-chat-meta">
-                <span data-ltr>{formatTime(m.at, locale)}</span>
-                {m.author === "customer" &&
-                  (m.answered ? (
-                    <CheckCheck size={14} className="text-chat-read" aria-hidden />
-                  ) : (
-                    <Check size={14} aria-hidden />
-                  ))}
-              </p>
-            </div>
+              side={m.author === "customer" ? "mine" : "theirs"}
+              text={m.text}
+              time={formatTime(m.at, locale)}
+              ticks={m.author === "customer" ? (m.answered ? "read" : "sent") : undefined}
+            />
           ),
         )}
         {sending && (

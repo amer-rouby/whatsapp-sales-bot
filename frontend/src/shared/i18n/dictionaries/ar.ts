@@ -126,9 +126,17 @@ export const ar = {
   conversations: {
     title: "المحادثات",
     description: "كل اللي العملاء كتبوه والبوت رد عليه",
-    columns: { customer: "العميل", lastMessage: "آخر رسالة", time: "الوقت" },
     emptyTitle: "لسه مفيش محادثات",
     emptyDescription: "أول ما عميل يبعت رسالة على الواتساب هتظهر هنا",
+    loadError: "مش قادر أجيب المحادثات",
+    selectTitle: "اختار محادثة",
+    selectDescription: "اختار عميل من القايمة عشان تشوف الشات كله",
+    back: "رجوع للمحادثات",
+    simulated: "تجربة",
+    botReplied: "البوت رد",
+    botLabel: "بياع",
+    messageCount: "{count} رسالة",
+    readOnlyNote: "المحادثة بتتحدّث لوحدها. الرد بنفسك على العميل هييجي قريب.",
   },
   simulator: {
     title: "جرّب البوت",
