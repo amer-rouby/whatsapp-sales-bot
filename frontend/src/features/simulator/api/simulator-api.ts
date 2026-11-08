@@ -15,9 +15,15 @@ export async function sendSimulatorMessage(message: SimulatorMessage): Promise<s
   return reply ?? null;
 }
 
-/** Messages the shop sent to this chat since the last call (e.g. replies written in the dashboard). */
-export async function pendingSimulatorReplies(customerId: string): Promise<string[]> {
-  const { replies } = await apiClient.get<{ replies: string[] }>(`/dev/simulator/messages/${encodeURIComponent(customerId)}`, {
+/** What the shop's number sent: text, or a product photo (data URL) with the text as its caption. */
+export interface SimulatorIncoming {
+  text: string;
+  imageUrl?: string | null;
+}
+
+/** Messages the shop sent to this chat since the last call (dashboard replies, product photos). */
+export async function pendingSimulatorReplies(customerId: string): Promise<SimulatorIncoming[]> {
+  const { replies } = await apiClient.get<{ replies: SimulatorIncoming[] }>(`/dev/simulator/messages/${encodeURIComponent(customerId)}`, {
     cache: "no-store",
   });
   return replies;

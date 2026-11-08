@@ -7,6 +7,7 @@ import { fmt } from "@/shared/i18n/config";
 import { getI18n } from "@/shared/i18n/server";
 import { ApiError } from "@/shared/lib/api-client";
 import { formatDate, formatTime } from "@/shared/lib/format";
+import { productImageUrl } from "@/shared/lib/product-image";
 import { EmptyState } from "@/shared/ui";
 import { conversationsQueries } from "../api/conversations-queries";
 import { BotToggle } from "./bot-toggle";
@@ -79,7 +80,8 @@ export async function ConversationThread({ id }: { id: string }) {
               key={m.id}
               side={mine ? "mine" : "theirs"}
               label={label}
-              text={m.body}
+              text={m.imageId ? photoCaption(m.body) : m.body}
+              imageUrl={m.imageId ? productImageUrl(m.imageId, "full") : undefined}
               time={formatTime(new Date(m.sentAt), locale)}
             />,
           ];
@@ -90,4 +92,9 @@ export async function ConversationThread({ id }: { id: string }) {
       <ReplyBox key={chat.id} conversationId={chat.id} canReply={chat.canReply} />
     </section>
   );
+}
+
+/** "[صورة: «ساعة»]" (how a sent photo is kept for the AI) → "ساعة" as the photo's caption. */
+function photoCaption(body: string) {
+  return body.match(/«(.+)»/)?.[1] ?? body;
 }

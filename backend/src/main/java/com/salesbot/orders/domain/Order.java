@@ -1,5 +1,6 @@
 package com.salesbot.orders.domain;
 
+import com.salesbot.orders.PlaceOrder;
 import com.salesbot.shared.persistence.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -61,10 +62,16 @@ public class Order extends BaseEntity {
         this.status = OrderStatus.NEW;
     }
 
-    /** @param unitPrice null when the product is unknown → the order is flagged for review */
-    public void addItem(String productName, String size, String color, int quantity, BigDecimal unitPrice,
-                        String priceCurrency) {
-        items.add(new OrderItem(this, productName, size, color, quantity, unitPrice));
+    /**
+     * @param unitPrice null when the product is unknown → the order is flagged for review
+     * @param valid     false when a choice is unknown or sold out → flagged for review too
+     */
+    public void addItem(String productName, List<PlaceOrder.OrderLineChoice> options, int quantity, BigDecimal unitPrice,
+                        String priceCurrency, boolean valid) {
+        items.add(new OrderItem(this, productName, options, quantity, unitPrice));
+        if (!valid) {
+            needsReview = true;
+        }
         if (unitPrice == null) {
             needsReview = true;
         } else if (currency == null) {
@@ -90,8 +97,9 @@ public class Order extends BaseEntity {
     /** Stable fingerprint of the items, used to spot the same order being recorded twice. */
     public String itemsFingerprint() {
         return items.stream()
-                .map(i -> String.join("|", i.getProductName().toLowerCase(), String.valueOf(i.getSize()),
-                        String.valueOf(i.getColor()), String.valueOf(i.getQuantity())))
+                .map(i -> String.join("|", i.getProductName().toLowerCase(),
+                        i.getOptions().stream().map(c -> (c.name() + "=" + c.value()).toLowerCase()).sorted().toList().toString(),
+                        String.valueOf(i.getQuantity())))
                 .sorted()
                 .reduce("", (a, b) -> a + ";" + b);
     }

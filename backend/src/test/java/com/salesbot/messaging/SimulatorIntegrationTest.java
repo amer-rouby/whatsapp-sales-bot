@@ -63,7 +63,8 @@ class SimulatorIntegrationTest {
         mvc.perform(get("/dev/simulator/messages/sim-test-3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.replies.length()").value(1))
-                .andExpect(jsonPath("$.replies[0]").value("أهلاً، معاك المحل"));
+                .andExpect(jsonPath("$.replies[0].text").value("أهلاً، معاك المحل"))
+                .andExpect(jsonPath("$.replies[0].imageUrl").doesNotExist());
         mvc.perform(get("/dev/simulator/messages/sim-test-3"))
                 .andExpect(jsonPath("$.replies.length()").value(0));
 
@@ -79,6 +80,24 @@ class SimulatorIntegrationTest {
                         .content("{\"paused\":false}"))
                 .andExpect(status().isNoContent());
         send("sim-test-3", "تمام").andExpect(jsonPath("$.reply").value("وصلتني رسالتك: تمام"));
+    }
+
+    @Test
+    void productPhotosReachTheSimulator() throws Exception {
+        String product = mvc.perform(post("/api/products").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"شنطة المحاكي\",\"price\":500,\"currency\":\"EGP\",\"inStock\":true}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        String productId = com.jayway.jsonpath.JsonPath.read(product, "$.id");
+        java.io.ByteArrayOutputStream png = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(80, 80, java.awt.image.BufferedImage.TYPE_INT_RGB), "png", png);
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/products/" + productId + "/images")
+                        .file(new org.springframework.mock.web.MockMultipartFile("file", "p.png", "image/png", png.toByteArray())))
+                .andExpect(status().isCreated());
+
+        // the echo bot answers in text first, then sends the photo the customer asked for
+        send("sim-test-photo", "ممكن صورة شنطة المحاكي؟").andExpect(jsonPath("$.reply").value("وصلتني رسالتك: ممكن صورة شنطة المحاكي؟"));
+        await().pollInSameThread().atMost(Duration.ofSeconds(5)).until(() -> mvc.perform(get("/dev/simulator/messages/sim-test-photo"))
+                .andReturn().getResponse().getContentAsString().contains("data:image/jpeg;base64,"));
     }
 
     @Test

@@ -31,7 +31,7 @@ function config(t: Dictionary, locale: Locale): ListPageConfig<Order> {
           </div>
         ),
       },
-      { key: "items", header: c.items, cell: (o) => <OrderLines lines={o.items} t={t} /> },
+      { key: "items", header: c.items, cell: (o) => <OrderLines lines={o.items} /> },
       {
         key: "address",
         header: c.address,

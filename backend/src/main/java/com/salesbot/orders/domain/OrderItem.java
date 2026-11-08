@@ -1,5 +1,6 @@
 package com.salesbot.orders.domain;
 
+import com.salesbot.orders.PlaceOrder;
 import com.salesbot.shared.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +9,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "order_items")
@@ -20,27 +25,25 @@ public class OrderItem extends BaseEntity {
     @Column(name = "product_name", nullable = false)
     private String productName;
 
-    @Column(name = "size")
-    private String size;
-
-    @Column(name = "color")
-    private String color;
+    /** What the customer picked, in order, e.g. السعة=256GB, اللون=أسود. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "options", nullable = false)
+    private List<PlaceOrder.OrderLineChoice> options = new ArrayList<>();
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    /** Catalog price at order time; null when the product was not found in the catalog. */
+    /** Catalog price at order time (of the chosen option when it has one); null when the product was not found. */
     @Column(name = "unit_price")
     private BigDecimal unitPrice;
 
     protected OrderItem() {
     }
 
-    OrderItem(Order order, String productName, String size, String color, int quantity, BigDecimal unitPrice) {
+    OrderItem(Order order, String productName, List<PlaceOrder.OrderLineChoice> options, int quantity, BigDecimal unitPrice) {
         this.order = order;
         this.productName = productName;
-        this.size = size;
-        this.color = color;
+        this.options = new ArrayList<>(options == null ? List.of() : options);
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
@@ -53,12 +56,8 @@ public class OrderItem extends BaseEntity {
         return productName;
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public String getColor() {
-        return color;
+    public List<PlaceOrder.OrderLineChoice> getOptions() {
+        return List.copyOf(options);
     }
 
     public int getQuantity() {

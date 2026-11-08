@@ -71,9 +71,9 @@ class OrderFlowIntegrationTest {
                 .andExpect(status().isCreated());
 
         // the AI "hallucinates" nothing about price: it only names products
-        when(ai.reply(any())).thenReturn(new AiReply("تم تأكيد الأوردر", new AiReply.OrderDraft("عامر", "المنيا",
-                List.of(new AiReply.OrderDraft.Item("كوتشي اختبار", "42", "أبيض", 2),
-                        new AiReply.OrderDraft.Item("منتج مش موجود", null, null, 1)))));
+        when(ai.reply(any())).thenReturn(new AiReply("تم تأكيد الأوردر", List.of(), new AiReply.OrderDraft("عامر", "المنيا",
+                List.of(new AiReply.OrderDraft.Item("كوتشي اختبار", List.of(), 2),
+                        new AiReply.OrderDraft.Item("منتج مش موجود", List.of(), 1)))));
 
         customerSays("201000000001", "أيوه أكد");
         verify(sender, timeout(5_000)).sendText("PN_ORD", "201000000001", "تم تأكيد الأوردر");

@@ -8,7 +8,7 @@ import { ApiError } from "@/shared/lib/api-client";
 import { errorMessage } from "@/shared/lib/errors";
 import { formatTime } from "@/shared/lib/format";
 import { Button, Card, Input } from "@/shared/ui";
-import { pendingSimulatorReplies, sendSimulatorMessage } from "../api/simulator-api";
+import { pendingSimulatorReplies, sendSimulatorMessage, type SimulatorIncoming } from "../api/simulator-api";
 
 type Author = "customer" | "bot" | "system";
 
@@ -16,6 +16,8 @@ interface ChatMessage {
   id: number;
   author: Author;
   text: string;
+  /** a product photo the bot sent (the text is its caption) */
+  imageUrl?: string;
   at: Date;
   /** customer messages only: has the shop's number (bot or a person) answered yet? */
   answered?: boolean;
@@ -55,10 +57,16 @@ export function ChatSimulator() {
   }
 
   /** Shows what the shop's number sent and marks the customer's messages as read. */
-  const receive = useCallback((replies: string[]) => {
+  const receive = useCallback((replies: SimulatorIncoming[]) => {
     setMessages((current) => [
       ...current.map((m) => (m.author === "customer" ? { ...m, answered: true } : m)),
-      ...replies.map((text) => ({ id: nextId.current++, author: "bot" as const, text, at: new Date() })),
+      ...replies.map((r) => ({
+        id: nextId.current++,
+        author: "bot" as const,
+        text: r.text,
+        imageUrl: r.imageUrl ?? undefined,
+        at: new Date(),
+      })),
     ]);
   }, []);
 
@@ -97,7 +105,7 @@ export function ChatSimulator() {
     try {
       const reply = await sendSimulatorMessage({ customerId, customerName, text });
       // null: the shop took this chat over, so the bot stays silent and the shop's reply comes by polling
-      if (reply !== null) receive([reply]);
+      if (reply !== null) receive([{ text: reply }]);
     } catch (error) {
       add("system", failureText(error));
     } finally {
@@ -154,6 +162,7 @@ export function ChatSimulator() {
               key={m.id}
               side={m.author === "customer" ? "mine" : "theirs"}
               text={m.text}
+              imageUrl={m.imageUrl}
               time={formatTime(m.at, locale)}
               ticks={m.author === "customer" ? (m.answered ? "read" : "sent") : undefined}
             />

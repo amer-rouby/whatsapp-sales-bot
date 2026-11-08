@@ -9,4 +9,7 @@ public interface OutboundMessageSender {
      * @param text          message body
      */
     void sendText(String phoneNumberId, String to, String text);
+
+    /** Sends a photo with an optional caption. */
+    void sendImage(String phoneNumberId, String to, OutboundImage image);
 }

@@ -4,6 +4,27 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 One version covers the whole product (backend `pom.xml` + frontend `package.json`).
 
+## [0.6.0] - 2026-11-08
+
+Sell anything, with photos: products of any kind with their own options and prices, a built-in photo editor, and the bot sends product photos on WhatsApp.
+
+### Added
+- **Product photos**: up to 8 per product. Drop them, pick several at once, or take one with the phone camera. The first photo is the main one (gold badge); reorder by dragging or with the arrow buttons, edit or remove any photo. Thumbnails in the product list.
+- **Photo editor** in the dashboard: square, portrait (4:5) or original shape; drag to move, mouse wheel or two fingers to zoom; rotate and flip; "whole photo on white" for items that don't fit a square; **auto enhance** (levels + gentle mid-tone lift for dark photos) and brightness / contrast / saturation / warmth sliders. Exports a sharp ~1200px JPEG and drops the camera's hidden data (location, device).
+- **Any kind of product**: free options (size, colour, storage, volume, weight, ...) with chip-style values; each value can be sold out on its own, and one option may give each value its own price (e.g. 128GB at 20,000 and 256GB at 23,000). Free specs (brand, warranty, material, ...).
+- **Product kinds**: clothes, shoes, phones & electronics, perfume & beauty, food, accessories, furniture, books, other. Picking one suggests its usual options and specs; adding a kind is one entry in `product-templates.ts`.
+- **The bot sends product photos** on WhatsApp when the customer asks to see a product or when it first offers one (up to 3 per reply), and the photo shows in the conversation inbox. Photos are uploaded to WhatsApp once and reused (re-uploaded after 25 days or if WhatsApp drops them).
+- **API** `POST /api/products/{id}/images`, `DELETE /api/products/{id}/images/{imageId}`, `PUT /api/products/{id}/images/order`, `GET /api/products/images/{imageId}?size=thumb|full`.
+
+### Changed
+- The bot is a general online-store seller (no longer "clothes and shoes"); it asks for every option a product has before closing an order.
+- Order prices follow the chosen option; an unknown or sold-out choice flags the order for review. Order lines show the chosen options.
+- Products list shows "from" the lowest price when prices depend on an option.
+- `V6` migration moves existing sizes and colours into the options "المقاس" and "اللون" (and the same for order lines).
+
+### Upgrade note
+- Stop the old backend before starting this one: `V6` replaces the sizes/colours columns, so the old version can't run against the upgraded database.
+
 ## [0.5.1] - 2026-11-08
 
 Fixes found while trying v0.5.0 end to end.
@@ -110,6 +131,7 @@ First working version: an AI sales assistant on WhatsApp that sells only from th
 - **Architecture guards**: Spring Modulith module-boundary test, ESLint feature-boundary rules, OpenAPI-generated TypeScript types.
 - **Release version shown in the dashboard** and at `/actuator/info`.
 
+[0.6.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.6.0
 [0.5.1]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.5.1
 [0.5.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.5.0
 [0.4.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.4.0

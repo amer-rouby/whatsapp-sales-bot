@@ -96,7 +96,7 @@ class GeminiReplyProvider implements AiReplyProvider {
         if (structured.reply() == null || structured.reply().isBlank()) {
             throw new AiUnavailableException("Gemini returned an empty reply");
         }
-        return new AiReply(structured.reply().strip(), toDraft(structured.order()));
+        return new AiReply(structured.reply().strip(), structured.photos(), toDraft(structured.order()));
     }
 
     private static AiReply.OrderDraft toDraft(StructuredReply.Order order) {
@@ -105,11 +105,22 @@ class GeminiReplyProvider implements AiReplyProvider {
         }
         List<AiReply.OrderDraft.Item> items = order.items().stream()
                 .filter(i -> i != null && i.productName() != null && !i.productName().isBlank())
-                .map(i -> new AiReply.OrderDraft.Item(i.productName().strip(), blankToNull(i.size()),
-                        blankToNull(i.color()), i.quantity() == null || i.quantity() < 1 ? 1 : i.quantity()))
+                .map(i -> new AiReply.OrderDraft.Item(i.productName().strip(), choices(i.options()),
+                        i.quantity() == null || i.quantity() < 1 ? 1 : i.quantity()))
                 .toList();
         return items.isEmpty() ? null : new AiReply.OrderDraft(blankToNull(order.customerName()),
                 blankToNull(order.address()), items);
+    }
+
+    /** Keeps only complete choices; the orders module checks them against the catalog. */
+    private static List<AiReply.OrderDraft.Choice> choices(List<StructuredReply.Choice> options) {
+        if (options == null) {
+            return List.of();
+        }
+        return options.stream()
+                .filter(c -> c != null && blankToNull(c.name()) != null && blankToNull(c.value()) != null)
+                .map(c -> new AiReply.OrderDraft.Choice(c.name().strip(), c.value().strip()))
+                .toList();
     }
 
     private static String blankToNull(String value) {

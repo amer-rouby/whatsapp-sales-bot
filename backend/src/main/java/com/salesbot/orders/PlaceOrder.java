@@ -16,6 +16,14 @@ public record PlaceOrder(UUID conversationId, String customerPhone, String custo
         items = items == null ? List.of() : List.copyOf(items);
     }
 
-    public record Item(String productName, String size, String color, int quantity) {
+    /** @param options what the customer picked, in order, e.g. السعة=256GB, اللون=أسود */
+    public record Item(String productName, List<OrderLineChoice> options, int quantity) {
+
+        public Item {
+            options = options == null ? List.of() : List.copyOf(options);
+        }
+    }
+
+    public record OrderLineChoice(String name, String value) {
     }
 }

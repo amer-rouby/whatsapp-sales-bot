@@ -83,10 +83,13 @@ public class ConversationQueries implements CustomerMessages {
                                      boolean botPaused, boolean canReply, List<ChatMessage> messages) {
     }
 
-    public record ChatMessage(UUID id, Message.Direction direction, Message.Author author, String body, Instant sentAt) {
+    /** @param imageId the product photo shown in this message (served by the catalog), null for text */
+    public record ChatMessage(UUID id, Message.Direction direction, Message.Author author, String body, UUID imageId,
+                              Instant sentAt) {
 
         static ChatMessage of(Message m) {
-            return new ChatMessage(m.getId(), m.getDirection(), m.getAuthor(), m.getBody(), m.getCreatedAt());
+            return new ChatMessage(m.getId(), m.getDirection(), m.getAuthor(), m.getBody(), m.getImageId(),
+                    m.getCreatedAt());
         }
     }
 }

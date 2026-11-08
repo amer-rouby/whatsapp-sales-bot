@@ -64,7 +64,7 @@ public class AgentReplies {
             current.pauseBot();
             Message saved = messages.saveAndFlush(Message.agentReply(current, body));
             return new ConversationQueries.ChatMessage(saved.getId(), saved.getDirection(), saved.getAuthor(),
-                    saved.getBody(), saved.getCreatedAt());
+                    saved.getBody(), saved.getImageId(), saved.getCreatedAt());
         });
     }
 

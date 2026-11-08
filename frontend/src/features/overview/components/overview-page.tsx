@@ -78,7 +78,7 @@ export async function OverviewPage() {
                   </p>
                 </div>
                 <div className="min-w-48 flex-[2] text-sm">
-                  <OrderLines lines={o.items} t={t} />
+                  <OrderLines lines={o.items} />
                 </div>
                 <span className="font-extrabold text-brand-800">
                   {o.total != null && o.currency ? formatMoney(o.total, o.currency, locale) : t.common.none}

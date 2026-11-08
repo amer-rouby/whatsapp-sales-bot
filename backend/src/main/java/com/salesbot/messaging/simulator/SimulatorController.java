@@ -69,14 +69,16 @@ class SimulatorController {
             return ResponseEntity.ok(new SimulatorReply(null));
         }
         return outbox.await(message.customerId(), REPLY_TIMEOUT)
-                .map(reply -> ResponseEntity.ok(new SimulatorReply(reply)))
+                .map(reply -> ResponseEntity.ok(new SimulatorReply(reply.text()))) // the text always goes out before any photo
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).build());
     }
 
     /** Messages the shop sent to this chat that the simulator hasn't shown yet (e.g. replies from the dashboard). */
     @GetMapping("/messages/{customerId}")
     PendingReplies pending(@PathVariable @Pattern(regexp = CUSTOMER_ID) String customerId) {
-        return new PendingReplies(outbox.drain(customerId));
+        return new PendingReplies(outbox.drain(customerId).stream()
+                .map(sent -> new SimulatorPendingMessage(sent.text(), sent.imageUrl()))
+                .toList());
     }
 
     record SimulatorMessage(
@@ -89,6 +91,10 @@ class SimulatorController {
     record SimulatorReply(String reply) {
     }
 
-    record PendingReplies(List<String> replies) {
+    record PendingReplies(List<SimulatorPendingMessage> replies) {
+    }
+
+    /** @param imageUrl a product photo as a data URL, or null for a text message */
+    record SimulatorPendingMessage(String text, String imageUrl) {
     }
 }
