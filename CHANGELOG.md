@@ -14,6 +14,7 @@ Sell anything, with photos: products of any kind with their own options and pric
 - **Any kind of product**: free options (size, colour, storage, volume, weight, ...) with chip-style values; each value can be sold out on its own, and one option may give each value its own price (e.g. 128GB at 20,000 and 256GB at 23,000). Free specs (brand, warranty, material, ...).
 - **Product kinds**: clothes, shoes, phones & electronics, perfume & beauty, food, accessories, furniture, books, other. Picking one suggests its usual options and specs; adding a kind is one entry in `product-templates.ts`.
 - **The bot sends product photos** on WhatsApp when the customer asks to see a product or when it first offers one (up to 3 per reply), and the photo shows in the conversation inbox. Photos are uploaded to WhatsApp once and reused (re-uploaded after 25 days or if WhatsApp drops them).
+- **Product photos in the simulator** too, so you can try "show me" without WhatsApp.
 - **API** `POST /api/products/{id}/images`, `DELETE /api/products/{id}/images/{imageId}`, `PUT /api/products/{id}/images/order`, `GET /api/products/images/{imageId}?size=thumb|full`.
 
 ### Changed
