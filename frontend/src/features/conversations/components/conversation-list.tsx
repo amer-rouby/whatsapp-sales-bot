@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, FlaskConical } from "lucide-react";
+import { Bot, FlaskConical, Hand } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/shared/i18n/provider";
@@ -60,6 +60,15 @@ export function ConversationList({ conversations }: { conversations: Conversatio
                     <span dir="auto" className="truncate text-start">
                       {c.lastMessage}
                     </span>
+                    {c.botPaused && (
+                      <span
+                        className="ms-auto inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary"
+                        title={t.conversations.botPausedBanner}
+                      >
+                        <Hand size={11} aria-hidden />
+                        {t.conversations.youReplying}
+                      </span>
+                    )}
                     {c.simulated && (
                       <span className="ms-auto inline-flex shrink-0 items-center gap-1 rounded-full bg-gold-50 px-2 py-0.5 text-[10px] font-bold text-gold-700">
                         <FlaskConical size={11} aria-hidden />

@@ -1,4 +1,4 @@
-import { ArrowRight, FlaskConical, MessageSquareText } from "lucide-react";
+import { ArrowRight, FlaskConical, Hand, MessageSquareText } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChatBubble, ChatNotice } from "@/shared/components/chat-bubble";
@@ -9,6 +9,8 @@ import { ApiError } from "@/shared/lib/api-client";
 import { formatDate, formatTime } from "@/shared/lib/format";
 import { EmptyState } from "@/shared/ui";
 import { conversationsQueries } from "../api/conversations-queries";
+import { BotToggle } from "./bot-toggle";
+import { ReplyBox } from "./reply-box";
 
 const CHAT_PANEL = "card flex min-h-0 flex-1 flex-col overflow-hidden";
 
@@ -22,7 +24,7 @@ export async function NoConversationSelected() {
   );
 }
 
-/** One chat, read-only, from the shop's point of view: the bot's replies are "mine" (green). */
+/** One chat from the shop's point of view: the bot's and the shop's replies are "mine" (green). The shop can answer here. */
 export async function ConversationThread({ id }: { id: string }) {
   const { t, locale } = await getI18n();
   const chat = await conversationsQueries.get(id).catch((error: unknown) => {
@@ -54,20 +56,29 @@ export async function ConversationThread({ id }: { id: string }) {
           </p>
         </div>
         {chat.simulated && <FlaskConical size={18} className="text-gold-300" aria-label={t.conversations.simulated} />}
-        <span className="text-xs text-brand-100">{fmt(t.conversations.messageCount, { count: chat.messages.length })}</span>
+        <span className="text-xs text-brand-100 max-md:hidden">{fmt(t.conversations.messageCount, { count: chat.messages.length })}</span>
+        <BotToggle conversationId={chat.id} paused={chat.botPaused} />
       </header>
+
+      {chat.botPaused && (
+        <p role="status" className="flex items-center gap-2 border-b border-gold-100 bg-gold-50 px-4 py-2 text-xs font-bold text-gold-700">
+          <Hand size={14} className="shrink-0" aria-hidden />
+          {t.conversations.botPausedBanner}
+        </p>
+      )}
 
       <div className="chat-wallpaper flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 py-5 sm:px-8">
         {chat.messages.map((m, i) => {
           // a date separator before the first message of each day
           const separator = i === 0 || days[i] !== days[i - 1] ? <ChatNotice key={`d-${m.id}`}>{days[i]}</ChatNotice> : null;
-          const fromBot = m.direction === "OUTBOUND";
+          const mine = m.direction === "OUTBOUND";
+          const label = m.author === "AGENT" ? t.conversations.youLabel : mine ? t.conversations.botLabel : undefined;
           return [
             separator,
             <ChatBubble
               key={m.id}
-              side={fromBot ? "mine" : "theirs"}
-              label={fromBot ? t.conversations.botLabel : undefined}
+              side={mine ? "mine" : "theirs"}
+              label={label}
               text={m.body}
               time={formatTime(new Date(m.sentAt), locale)}
             />,
@@ -76,9 +87,7 @@ export async function ConversationThread({ id }: { id: string }) {
         <ScrollToEnd trigger={chat.messages.length} />
       </div>
 
-      <footer className="border-t border-border bg-background px-4 py-3 text-center text-xs text-muted">
-        {t.conversations.readOnlyNote}
-      </footer>
+      <ReplyBox key={chat.id} conversationId={chat.id} canReply={chat.canReply} />
     </section>
   );
 }

@@ -22,6 +22,8 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
 
         String getPhoneNumberId();
 
+        boolean getBotPaused();
+
         String getLastBody();
 
         String getLastDirection();
@@ -33,7 +35,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
 
     @Query(nativeQuery = true, value = """
             SELECT c.id AS id, c.customer_name AS customerName, c.customer_wa_id AS customerWaId,
-                   c.phone_number_id AS phoneNumberId,
+                   c.phone_number_id AS phoneNumberId, c.bot_paused AS botPaused,
                    last.body AS lastBody, last.direction AS lastDirection, last.created_at AS lastAt,
                    cnt.n AS messageCount
             FROM conversations c
