@@ -1,5 +1,6 @@
 package com.salesbot.messaging.infrastructure;
 
+import com.salesbot.messaging.OutboundImage;
 import com.salesbot.messaging.OutboundMessageSender;
 import com.salesbot.messaging.simulator.SimulatorOutbox;
 import org.slf4j.Logger;
@@ -25,6 +26,15 @@ class LoggingMessageSender implements OutboundMessageSender {
         log.info("[WHATSAPP-OUT] from={} to={} text={}", phoneNumberId, to, text);
         if (simulatorOutbox.accepts(phoneNumberId)) {
             simulatorOutbox.record(to, text);
+        }
+    }
+
+    @Override
+    public void sendImage(String phoneNumberId, String to, OutboundImage image) {
+        log.info("[WHATSAPP-OUT] from={} to={} photo={} ({} bytes) caption={}",
+                phoneNumberId, to, image.cacheKey(), image.data().length, image.caption());
+        if (simulatorOutbox.accepts(phoneNumberId)) {
+            simulatorOutbox.recordImage(to, image);
         }
     }
 }

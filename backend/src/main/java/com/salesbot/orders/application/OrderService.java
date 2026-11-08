@@ -1,7 +1,7 @@
 package com.salesbot.orders.application;
 
 import com.salesbot.catalog.CatalogQuery;
-import com.salesbot.catalog.ProductSummary;
+import com.salesbot.catalog.ProductOption;
 import com.salesbot.orders.OrderPlacement;
 import com.salesbot.orders.PlaceOrder;
 import com.salesbot.orders.RecentOrders;
@@ -45,12 +45,16 @@ public class OrderService implements OrderPlacement, RecentOrders {
         Order order = new Order(command.conversationId(), command.customerPhone(), command.customerName(),
                 command.address());
         for (PlaceOrder.Item item : command.items()) {
-            Optional<ProductSummary> product = catalog.findByName(item.productName());
+            // the price comes from the catalog (with the chosen option's price when it has one), never from the AI
+            Optional<CatalogQuery.Quote> quote = catalog.quote(item.productName(), item.options().stream()
+                    .map(c -> new ProductOption.OptionChoice(c.name(), c.value()))
+                    .toList());
             order.addItem(
-                    product.map(ProductSummary::name).orElse(item.productName()),
-                    item.size(), item.color(), item.quantity(),
-                    product.map(ProductSummary::price).orElse(null),
-                    product.map(ProductSummary::currency).orElse(null));
+                    quote.map(CatalogQuery.Quote::productName).orElse(item.productName()),
+                    item.options(), item.quantity(),
+                    quote.map(CatalogQuery.Quote::unitPrice).orElse(null),
+                    quote.map(CatalogQuery.Quote::currency).orElse(null),
+                    quote.map(CatalogQuery.Quote::valid).orElse(false));
         }
 
         if (isDuplicate(order)) {

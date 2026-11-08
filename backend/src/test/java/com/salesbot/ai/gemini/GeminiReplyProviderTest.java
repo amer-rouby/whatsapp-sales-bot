@@ -77,8 +77,10 @@ class GeminiReplyProviderTest {
                 .andExpect(jsonPath("$.systemInstruction.parts[0].text").value(allOf(
                         containsString("موظف مبيعات"),
                         containsString(CatalogPromptFormatter.HEADER),
-                        containsString("- «كوتشي أبيض» | القسم: أحذية | السعر: 1250 EGP | المقاسات: 40, 41, 42 | الألوان: أبيض | متاح"),
-                        containsString("- «صندل صيفي» | السعر: 650 EGP | خلص (مش متاح دلوقتي)"))))
+                        containsString("- «كوتشي أبيض» | القسم: أحذية | السعر: 1250 EGP (إلا لو الاختيار ليه سعر مكتوب جنبه)"
+                                + " | المقاس: 40، 42 (1300 EGP)، 43 (خلص) | الخامة: جلد | متاح | ليه صورة"),
+                        containsString("- «صندل صيفي» | السعر: 650 EGP | خلص (مش متاح دلوقتي) | مالوش صورة"))))
+                .andExpect(jsonPath("$.generationConfig.responseJsonSchema.required[1]").value("photos"))
                 .andExpect(jsonPath("$.generationConfig.thinkingConfig.thinkingLevel").value("low"))
                 .andExpect(jsonPath("$.generationConfig.responseMimeType").value("application/json"))
                 .andExpect(jsonPath("$.generationConfig.responseJsonSchema.required[0]").value("reply"))
@@ -92,10 +94,15 @@ class GeminiReplyProviderTest {
                 new Turn(Role.CUSTOMER, "السلام عليكم"),
                 new Turn(Role.BOT, "وعليكم السلام، أؤمرني")), List.of(
                 new ProductFact("كوتشي أبيض", "أحذية", null, new BigDecimal("1250.00"), "EGP",
-                        "40, 41, 42", "أبيض", true),
-                new ProductFact("صندل صيفي", null, null, new BigDecimal("650.00"), "EGP", null, null, false))));
+                        true, List.of(new ReplyRequest.Option("المقاس", List.of(
+                                new ReplyRequest.OptionValue("40", null, true),
+                                new ReplyRequest.OptionValue("42", new BigDecimal("1300.00"), true),
+                                new ReplyRequest.OptionValue("43", null, false)))),
+                        List.of(new ReplyRequest.Spec("الخامة", "جلد")), true),
+                new ProductFact("صندل صيفي", null, null, new BigDecimal("650.00"), "EGP", false, List.of(), List.of(), false))));
 
         assertThat(reply.text()).isEqualTo("أيوه متاح يا فندم 👟");
+        assertThat(reply.photos()).isEmpty(); // left out by the model → none
         assertThat(reply.order()).isNull();
         server.verify();
     }
@@ -104,22 +111,24 @@ class GeminiReplyProviderTest {
     void readsTheConfirmedOrder() {
         server.expect(requestTo(URL)).andRespond(answer(Map.of(
                 "reply", "تم تأكيد الأوردر",
+                "photos", List.of(" كوتشي أبيض ", "كوتشي أبيض", "", "صندل", "شراب", "رابع"), // trimmed, unique, max 3
                 "order", Map.of(
                         "customerName", "عامر",
                         "address", " المنيا، سمالوط ",
                         "items", List.of(
-                                Map.of("productName", " كوتشي أبيض ", "size", "42", "color", "أبيض", "quantity", 2),
+                                Map.of("productName", " كوتشي أبيض ", "quantity", 2, "options", List.of(Map.of("name", "المقاس", "value", " 42 "), Map.of("name", "اللون", "value", "أبيض"), Map.of("name", " ", "value", "x"))),
                                 Map.of("productName", "شراب", "quantity", 0),   // quantity fixed to 1
                                 Map.of("productName", " ", "quantity", 1))))));  // blank name dropped
 
         AiReply reply = provider.reply(ask("أيوه أكد"));
 
         assertThat(reply.text()).isEqualTo("تم تأكيد الأوردر");
+        assertThat(reply.photos()).containsExactly("كوتشي أبيض", "صندل", "شراب");
         assertThat(reply.order().customerName()).isEqualTo("عامر");
         assertThat(reply.order().address()).isEqualTo("المنيا، سمالوط");
         assertThat(reply.order().items()).containsExactly(
-                new AiReply.OrderDraft.Item("كوتشي أبيض", "42", "أبيض", 2),
-                new AiReply.OrderDraft.Item("شراب", null, null, 1));
+                new AiReply.OrderDraft.Item("كوتشي أبيض", List.of(new AiReply.OrderDraft.Choice("المقاس", "42"), new AiReply.OrderDraft.Choice("اللون", "أبيض")), 2),
+                new AiReply.OrderDraft.Item("شراب", List.of(), 1));
     }
 
     @Test

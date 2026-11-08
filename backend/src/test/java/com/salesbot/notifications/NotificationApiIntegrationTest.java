@@ -63,7 +63,7 @@ class NotificationApiIntegrationTest {
                 "$[?(@.customerWaId=='" + MESSAGE_CUSTOMER + "' && @.messageCount==2)]").size() == 1);
 
         orders.place(new PlaceOrder(null, ORDER_CUSTOMER, "Nour", "Cairo",
-                List.of(new PlaceOrder.Item("منتج مش في الكتالوج", "40", "أسود", 1))));
+                List.of(new PlaceOrder.Item("منتج مش في الكتالوج", List.of(new PlaceOrder.OrderLineChoice("المقاس", "40")), 1))));
 
         String body = feed();
         assertThat(JsonPath.<String>read(body, "$.serverTime")).isNotBlank();

@@ -10,6 +10,7 @@ import com.salesbot.conversation.domain.Message;
 import com.salesbot.conversation.infrastructure.ConversationRepository;
 import com.salesbot.conversation.infrastructure.MessageRepository;
 import com.salesbot.messaging.InboundMessageReceived;
+import com.salesbot.messaging.OutboundImage;
 import com.salesbot.messaging.OutboundMessageSender;
 import com.salesbot.orders.OrderPlacement;
 import com.salesbot.orders.PlaceOrder;
@@ -77,6 +78,7 @@ class ConversationService {
         }
 
         AiReply reply = generateReply(stored, event.text());
+        List<CatalogQuery.Photo> photos = photosFor(reply);
 
         // the shop may have taken over while the AI was thinking: then its reply wins and the bot's is dropped
         Boolean saved = tx.execute(status -> {
@@ -85,6 +87,9 @@ class ConversationService {
                 return false;
             }
             messages.save(Message.outbound(conversation, reply.text()));
+            for (CatalogQuery.Photo photo : photos) {
+                messages.save(Message.botPhoto(conversation, photoNote(photo), photo.imageId()));
+            }
             return true;
         });
         if (!Boolean.TRUE.equals(saved)) {
@@ -95,6 +100,40 @@ class ConversationService {
             recordOrder(stored, event, reply.order());
         }
         sender.sendText(event.phoneNumberId(), event.customerWaId(), reply.text());
+        for (CatalogQuery.Photo photo : photos) {
+            sendPhoto(event, photo);
+        }
+    }
+
+    /** The main photo of each product the AI asked to show; unknown products or ones without photos are skipped. */
+    private List<CatalogQuery.Photo> photosFor(AiReply reply) {
+        List<CatalogQuery.Photo> photos = new ArrayList<>();
+        for (String productName : reply.photos()) {
+            try {
+                catalog.mainPhoto(productName)
+                        .filter(p -> photos.stream().noneMatch(x -> x.imageId().equals(p.imageId())))
+                        .ifPresentOrElse(photos::add,
+                                () -> log.info("No photo to send for \"{}\"", productName));
+            } catch (RuntimeException e) {
+                log.warn("Could not load the photo of \"{}\"", productName, e);
+            }
+        }
+        return photos;
+    }
+
+    /** A photo that fails to send never stops the conversation: the text already went out. */
+    private void sendPhoto(InboundMessageReceived event, CatalogQuery.Photo photo) {
+        try {
+            sender.sendImage(event.phoneNumberId(), event.customerWaId(), new OutboundImage(
+                    "product-image:" + photo.imageId(), photo.contentType(), photo.data(), photo.productName()));
+        } catch (RuntimeException e) {
+            log.error("Could not send the photo of \"{}\" to {}", photo.productName(), event.customerWaId(), e);
+        }
+    }
+
+    /** Kept in the chat history, so the AI knows this photo was already sent. */
+    static String photoNote(CatalogQuery.Photo photo) {
+        return "[صورة: «" + photo.productName() + "»]";
     }
 
     /** Never blocks the customer's reply: a failed order is logged for a human to pick up. */
@@ -106,7 +145,9 @@ class ConversationService {
                     draft.customerName() != null ? draft.customerName() : stored.customerName(),
                     draft.address(),
                     draft.items().stream()
-                            .map(i -> new PlaceOrder.Item(i.productName(), i.size(), i.color(), i.quantity()))
+                            .map(i -> new PlaceOrder.Item(i.productName(), i.options().stream()
+                                    .map(c -> new PlaceOrder.OrderLineChoice(c.name(), c.value()))
+                                    .toList(), i.quantity()))
                             .toList()));
         } catch (RuntimeException e) {
             log.error("Could not record order for conversation {} — check the chat", stored.conversationId(), e);
@@ -147,7 +188,12 @@ class ConversationService {
     private List<ReplyRequest.ProductFact> currentProducts() {
         return catalog.products().stream()
                 .map(p -> new ReplyRequest.ProductFact(p.name(), p.category(), p.description(), p.price(),
-                        p.currency(), p.sizes(), p.colors(), p.inStock()))
+                        p.currency(), p.inStock(),
+                        p.options().stream().map(o -> new ReplyRequest.Option(o.name(), o.values().stream()
+                                .map(v -> new ReplyRequest.OptionValue(v.value(), v.price(), v.inStock()))
+                                .toList())).toList(),
+                        p.specs().stream().map(s -> new ReplyRequest.Spec(s.name(), s.value())).toList(),
+                        p.imageCount() > 0))
                 .toList();
     }
 

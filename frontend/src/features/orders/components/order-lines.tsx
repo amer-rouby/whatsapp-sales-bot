@@ -1,14 +1,12 @@
 import { AlertTriangle } from "lucide-react";
-import { fmt } from "@/shared/i18n/config";
-import type { Dictionary } from "@/shared/i18n/dictionaries/ar";
 import type { OrderLine } from "../types";
 
-/** "2 × White sneaker (size 42 · white)"; unpriced lines (not in the catalog) are flagged. */
-export function OrderLines({ lines, t }: { lines: OrderLine[]; t: Dictionary }) {
+/** "2 × Phone (Storage 256GB · Colour black)"; unpriced lines (not in the catalog) are flagged. */
+export function OrderLines({ lines }: { lines: OrderLine[] }) {
   return (
     <ul className="space-y-1">
       {lines.map((line, i) => {
-        const details = [line.size && fmt(t.orders.size, { size: line.size }), line.color].filter(Boolean).join(" · ");
+        const details = (line.options ?? []).map((o) => `${o.name} ${o.value}`).join(" · ");
         const unknown = line.unitPrice == null;
         return (
           <li key={i} dir="auto" className={unknown ? "flex items-center gap-1 text-start text-danger" : "text-start"}>

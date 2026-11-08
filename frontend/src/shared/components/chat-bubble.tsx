@@ -11,22 +11,31 @@ export interface ChatBubbleProps {
   ticks?: "sent" | "read";
   /** small label above the text, e.g. the bot's name */
   label?: string;
+  /** a photo message: the text becomes its caption */
+  imageUrl?: string;
 }
 
 /** One WhatsApp-style message. Used by the simulator and the conversations inbox, so both look identical. */
-export function ChatBubble({ side, text, time, ticks, label }: ChatBubbleProps) {
+export function ChatBubble({ side, text, time, ticks, label, imageUrl }: ChatBubbleProps) {
   return (
     <div
       className={cn(
         "max-w-[78%] animate-fade-up rounded-2xl px-3 pb-1.5 pt-2 text-sm shadow-sm text-chat-ink",
         side === "mine" ? "self-end rounded-ee-sm bg-chat-out" : "self-start rounded-es-sm bg-white",
+        imageUrl && "w-64 px-1 pt-1",
       )}
     >
-      {label && <p className="mb-0.5 text-xs font-bold text-primary">{label}</p>}
-      <p dir="auto" className="whitespace-pre-wrap text-start leading-relaxed">
+      {label && <p className={cn("mb-0.5 text-xs font-bold text-primary", imageUrl && "px-2 pt-1")}>{label}</p>}
+      {imageUrl && (
+        <a href={imageUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl bg-black/5">
+          {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer can't send the session */}
+          <img src={imageUrl} alt={text} loading="lazy" className="aspect-square w-full object-cover" />
+        </a>
+      )}
+      <p dir="auto" className={cn("whitespace-pre-wrap text-start leading-relaxed", imageUrl && "px-2 pt-1")}>
         {text}
       </p>
-      <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-chat-meta">
+      <p className={cn("mt-0.5 flex items-center justify-end gap-1 text-[10px] text-chat-meta", imageUrl && "px-2")}>
         <span data-ltr>{time}</span>
         {ticks === "read" && <CheckCheck size={14} className="text-chat-read" aria-hidden />}
         {ticks === "sent" && <Check size={14} aria-hidden />}

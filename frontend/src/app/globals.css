@@ -149,3 +149,10 @@ html[dir="rtl"] [data-ltr] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Light checkerboard behind the photo editor, so transparent edges and the frame are easy to see */
+@utility checkerboard {
+  background-color: var(--color-background);
+  background-image: conic-gradient(rgb(0 0 0 / 0.05) 25%, transparent 0 50%, rgb(0 0 0 / 0.05) 0 75%, transparent 0);
+  background-size: 20px 20px;
+}

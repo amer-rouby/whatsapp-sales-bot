@@ -53,11 +53,16 @@ class OrderController {
     }
 
     /** Named explicitly: the class name becomes the OpenAPI schema name the dashboard types use. */
-    record OrderLineResponse(String productName, String size, String color, int quantity, BigDecimal unitPrice) {
+    record OrderLineResponse(String productName, List<OrderChoice> options, int quantity, BigDecimal unitPrice) {
 
         static OrderLineResponse of(OrderItem i) {
-            return new OrderLineResponse(i.getProductName(), i.getSize(), i.getColor(), i.getQuantity(),
-                    i.getUnitPrice());
+            return new OrderLineResponse(i.getProductName(),
+                    i.getOptions().stream().map(c -> new OrderChoice(c.name(), c.value())).toList(),
+                    i.getQuantity(), i.getUnitPrice());
         }
+    }
+
+    /** One choice on an order line, e.g. السعة = 256GB. */
+    record OrderChoice(String name, String value) {
     }
 }

@@ -33,6 +33,9 @@ public class Message extends BaseEntity {
     @Column(name = "body", nullable = false)
     private String body;
 
+    @Column(name = "image_id")
+    private java.util.UUID imageId;
+
     protected Message() {
     }
 
@@ -56,6 +59,21 @@ public class Message extends BaseEntity {
     /** A reply typed by a person from the shop in the dashboard. */
     public static Message agentReply(Conversation conversation, String body) {
         return new Message(conversation, Direction.OUTBOUND, Author.AGENT, null, body);
+    }
+
+    /**
+     * A product photo the bot sent. The body stays readable on its own ("[صورة: «name»]") so the AI history
+     * knows the photo was already sent.
+     */
+    public static Message botPhoto(Conversation conversation, String body, java.util.UUID imageId) {
+        Message message = new Message(conversation, Direction.OUTBOUND, Author.BOT, null, body);
+        message.imageId = imageId;
+        return message;
+    }
+
+    /** The catalog photo this message shows, or null for a text message. */
+    public java.util.UUID getImageId() {
+        return imageId;
     }
 
     public Direction getDirection() {

@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products/{id}/images/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["reorderImages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/conversations/{id}/bot": {
         parameters: {
             query?: never;
@@ -62,6 +78,22 @@ export interface paths {
         get: operations["list"];
         put?: never;
         post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/{id}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addImage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -114,6 +146,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["changeStatus"];
+        trace?: never;
+    };
+    "/api/products/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["image"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/orders": {
@@ -196,19 +244,65 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products/{id}/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        OptionRequest: {
+            name?: string;
+            values: components["schemas"]["ValueRequest"][];
+        };
         ProductRequest: {
             name: string;
             category?: string;
             description?: string;
             price: number;
             currency: string;
-            sizes?: string;
-            colors?: string;
+            options?: components["schemas"]["OptionRequest"][];
+            specs?: components["schemas"]["SpecRequest"][];
             inStock?: boolean;
+        };
+        SpecRequest: {
+            name?: string;
+            value?: string;
+        };
+        ValueRequest: {
+            value?: string;
+            price?: number;
+            inStock?: boolean;
+        };
+        ImageResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            width?: number;
+            /** Format: int32 */
+            height?: number;
+        };
+        OptionValue: {
+            value?: string;
+            price?: number;
+            inStock?: boolean;
+        };
+        ProductOption: {
+            name?: string;
+            values?: components["schemas"]["OptionValue"][];
         };
         ProductResponse: {
             /** Format: uuid */
@@ -218,13 +312,21 @@ export interface components {
             description?: string;
             price?: number;
             currency?: string;
-            sizes?: string;
-            colors?: string;
             inStock?: boolean;
+            options?: components["schemas"]["ProductOption"][];
+            specs?: components["schemas"]["ProductSpec"][];
+            images?: components["schemas"]["ImageResponse"][];
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        ProductSpec: {
+            name?: string;
+            value?: string;
+        };
+        ImageOrderRequest: {
+            imageIds: string[];
         };
         BotStateRequest: {
             paused: boolean;
@@ -240,6 +342,8 @@ export interface components {
             /** @enum {string} */
             author?: "CUSTOMER" | "BOT" | "AGENT";
             body?: string;
+            /** Format: uuid */
+            imageId?: string;
             /** Format: date-time */
             sentAt?: string;
         };
@@ -262,10 +366,13 @@ export interface components {
             /** @enum {string} */
             status: "NEW" | "CONFIRMED" | "SHIPPED" | "CANCELLED";
         };
+        OrderChoice: {
+            name?: string;
+            value?: string;
+        };
         OrderLineResponse: {
             productName?: string;
-            size?: string;
-            color?: string;
+            options?: components["schemas"]["OrderChoice"][];
             /** Format: int32 */
             quantity?: number;
             unitPrice?: number;
@@ -410,6 +517,32 @@ export interface operations {
             };
         };
     };
+    reorderImages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductResponse"];
+                };
+            };
+        };
+    };
     setBot: {
         parameters: {
             query?: never;
@@ -526,6 +659,35 @@ export interface operations {
             };
         };
     };
+    addImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ImageResponse"];
+                };
+            };
+        };
+    };
     reply: {
         parameters: {
             query?: never;
@@ -598,6 +760,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["OrderResponse"];
+                };
+            };
+        };
+    };
+    image: {
+        parameters: {
+            query?: {
+                size?: "full" | "thumb";
+            };
+            header?: never;
+            path: {
+                imageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
                 };
             };
         };
@@ -703,6 +889,27 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["UserResponse"];
                 };
+            };
+        };
+    };
+    removeImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                imageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
