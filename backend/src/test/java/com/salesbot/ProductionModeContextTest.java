@@ -15,7 +15,8 @@ import org.springframework.context.annotation.Import;
         "salesbot.whatsapp.sender=cloud",
         "salesbot.whatsapp.access-token=fake-token",
         "salesbot.whatsapp.app-secret=fake-secret",
-        "salesbot.simulator.enabled=false"
+        "salesbot.simulator.enabled=false",
+        "salesbot.security.jwt-secret=" + IntegrationTest.JWT_SECRET
 })
 @Import(TestcontainersConfiguration.class)
 class ProductionModeContextTest {

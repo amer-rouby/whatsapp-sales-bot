@@ -7,7 +7,7 @@ import { errorMessage } from "@/shared/lib/errors";
 import { formatMoney } from "@/shared/lib/format";
 import { load } from "@/shared/lib/load";
 import { Badge, ButtonLink } from "@/shared/ui";
-import { productsApi } from "../api/products-api";
+import { productsQueries } from "../api/products-queries";
 import type { Product } from "../types";
 import { DeleteProductButton } from "./delete-product-button";
 
@@ -74,7 +74,7 @@ function config(t: Dictionary, locale: Locale): ListPageConfig<Product> {
 
 export async function ProductsPage() {
   const { t, locale } = await getI18n();
-  const result = await load(productsApi.list);
+  const result = await load(productsQueries.list);
   if (!result.ok) {
     return (
       <ListPage

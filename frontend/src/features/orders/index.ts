@@ -1,4 +1,4 @@
-export { ordersApi } from "./api/orders-api";
+export { ordersQueries } from "./api/orders-queries";
 export { OrderLines } from "./components/order-lines";
 export { OrderStatusSelect } from "./components/order-status-select";
 export { OrdersPage } from "./components/orders-page";

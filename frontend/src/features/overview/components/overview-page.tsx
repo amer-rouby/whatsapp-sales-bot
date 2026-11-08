@@ -1,6 +1,6 @@
 import { BellRing, CloudOff, Package, ShoppingBag, ShoppingCart, Wallet } from "lucide-react";
-import { OrderLines, ordersApi, STATUS_TONE } from "@/features/orders";
-import { productsApi } from "@/features/products";
+import { OrderLines, ordersQueries, STATUS_TONE } from "@/features/orders";
+import { productsQueries } from "@/features/products";
 import { fmt } from "@/shared/i18n/config";
 import { getI18n } from "@/shared/i18n/server";
 import { errorMessage } from "@/shared/lib/errors";
@@ -13,7 +13,7 @@ export async function OverviewPage() {
   const { t, locale } = await getI18n();
   const header = <PageHeader title={t.overview.title} description={t.overview.description} />;
 
-  const result = await load(() => Promise.all([ordersApi.list(), productsApi.list()]));
+  const result = await load(() => Promise.all([ordersQueries.list(), productsQueries.list()]));
   if (!result.ok) {
     return (
       <div className="flex flex-col gap-6">
