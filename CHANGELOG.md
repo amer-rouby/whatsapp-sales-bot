@@ -19,12 +19,18 @@ Sign-in for the dashboard: customer orders and the catalog are no longer open to
 - Session tokens are signed JWTs (HS256, 12 hours, `SALESBOT_JWT_SECRET`) checked by Spring Security on every call.
 - The token lives in an `httpOnly` cookie and never reaches page JavaScript; browser calls go through the Next.js proxy, which adds it on the way to the backend.
 - Passwords are stored as BCrypt hashes only.
-- An expired or rejected session clears the cookie and returns to the login page.
-- The proxy refuses changes (POST/PUT/PATCH/DELETE) coming from another site, and talks to the backend server-to-server (the browser's origin is not forwarded).
+- An expired or rejected session clears the cookie and returns to the login page; another site can't sign you out through that page.
+- The proxy refuses changes (POST/PUT/PATCH/DELETE) coming from another site (it understands `X-Forwarded-Host`, so it works behind cloudflared/nginx) and talks to the backend server-to-server.
+- The session cookie is `Secure` whenever the browser came over HTTPS (also behind a tunnel), and plain HTTP on the LAN still works.
+- The brute-force guard keeps bounded memory even when random emails are sprayed.
 - `/v3/api-docs` is closed unless `SALESBOT_EXPOSE_API_DOCS=true` (development only).
 
 ### Changed
 - Pages read their data on the server straight from the backend (`*-queries.ts`); client components only send changes (`*-api.ts`).
+- The frontend's backend address is `SALESBOT_BACKEND_URL` (server side only) instead of `NEXT_PUBLIC_API_BASE_URL`.
+
+### Removed
+- Backend CORS settings (`SALESBOT_CORS_ALLOWED_ORIGINS`): the browser never calls the backend directly anymore.
 
 ## [0.2.0] - 2026-11-07
 

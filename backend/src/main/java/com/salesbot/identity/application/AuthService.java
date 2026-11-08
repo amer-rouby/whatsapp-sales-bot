@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -32,7 +31,10 @@ public class AuthService {
         this.dummyHash = passwords.encode("not-a-real-password");
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * Deliberately not @Transactional: the BCrypt check takes ~250 ms and must not hold a pooled DB
+     * connection meanwhile (the repository call runs its own short read transaction; open-in-view is off).
+     */
     public LoginResult login(String rawEmail, String password) {
         String email = User.normalizeEmail(rawEmail);
         if (attempts.isBlocked(email)) {

@@ -78,16 +78,13 @@ class ProductApiIntegrationTest {
     }
 
     @Test
-    void dashboardOriginMayCallTheApi() throws Exception {
-        mvc.perform(options("/api/products")
-                        .header("Origin", "http://localhost:3000")
-                        .header("Access-Control-Request-Method", "POST"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:3000"));
-
-        mvc.perform(options("/api/products")
-                        .header("Origin", "http://evil.example")
-                        .header("Access-Control-Request-Method", "POST"))
-                .andExpect(status().isForbidden());
+    void noBrowserOriginIsAllowedToCallTheApiDirectly() throws Exception {
+        // the dashboard goes through its own server (Next.js proxy), so the backend grants CORS to nobody
+        for (String origin : new String[] {"http://localhost:3000", "http://evil.example"}) {
+            mvc.perform(options("/api/products")
+                            .header("Origin", origin)
+                            .header("Access-Control-Request-Method", "POST"))
+                    .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+        }
     }
 }

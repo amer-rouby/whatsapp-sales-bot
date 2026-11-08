@@ -1,8 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { BACKEND_URL, safeNext, SESSION_COOKIE } from "./constants";
+import { BACKEND_URL, isHttps, safeNext, SESSION_COOKIE } from "./constants";
 
 export type LoginState = { error?: "invalid" | "tooMany" | "unreachable" | "missing"; email?: string };
 
@@ -28,17 +28,34 @@ export async function login(_previous: LoginState, form: FormData): Promise<Logi
     return { error: "unreachable", email };
   }
   if (response.status === 429) return { error: "tooMany", email };
-  if (!response.ok) return { error: "invalid", email };
+  if (response.status === 400 || response.status === 401) return { error: "invalid", email };
+  if (!response.ok) return { error: "unreachable", email };
 
-  const { token, expiresAt } = (await response.json()) as { token: string; expiresAt: string };
-  (await cookies()).set(SESSION_COOKIE, token, {
+  const session = await readSession(response);
+  if (!session) return { error: "unreachable", email };
+
+  (await cookies()).set(SESSION_COOKIE, session.token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    // Secure only when the browser came over HTTPS: on plain http (e.g. a phone on the LAN) a Secure
+    // cookie would be dropped silently and every login would bounce back to /login.
+    secure: isHttps(await headers()),
     sameSite: "lax",
     path: "/",
-    expires: new Date(expiresAt),
+    expires: session.expiresAt,
   });
   redirect(next);
+}
+
+/** The login response, or null if a gateway answered 2xx with something that isn't one. */
+async function readSession(response: Response): Promise<{ token: string; expiresAt: Date } | null> {
+  try {
+    const body = (await response.json()) as { token?: unknown; expiresAt?: unknown };
+    const expiresAt = new Date(String(body.expiresAt));
+    if (typeof body.token !== "string" || !body.token || Number.isNaN(expiresAt.getTime())) return null;
+    return { token: body.token, expiresAt };
+  } catch {
+    return null;
+  }
 }
 
 export async function logout() {

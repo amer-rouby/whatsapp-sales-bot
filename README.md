@@ -28,7 +28,7 @@ docker-compose.yml   PostgreSQL 17 on port 5442
 | `catalog` | Products API; `CatalogQuery` is what the bot may sell. |
 | `orders` | Orders API; `OrderPlacement` records confirmed orders with catalog prices. |
 | `merchant` | Reserved for multi-store accounts. |
-| `shared` | Base entity, ProblemDetail errors, CORS, async. |
+| `shared` | Base entity, ProblemDetail errors, security, async. |
 
 A module's root package is its public API; sub-packages are internal. `ModularityTests` fails the build on violations or cycles.
 

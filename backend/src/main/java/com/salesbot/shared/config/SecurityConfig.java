@@ -39,7 +39,6 @@ class SecurityConfig {
             throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // bearer tokens only, nothing the browser sends automatically
-                .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/webhook", "/webhook/**").permitAll();
