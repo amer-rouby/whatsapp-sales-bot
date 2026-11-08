@@ -1,3 +1,3 @@
-import { ConversationsPage } from "@/features/conversations";
+import { NoConversationSelected } from "@/features/conversations";
 
-export default ConversationsPage;
+export default NoConversationSelected;

@@ -21,6 +21,17 @@ export function formatDateTime(iso: string, locale: Locale) {
   );
 }
 
+export function formatDate(iso: string, locale: Locale) {
+  return new Intl.DateTimeFormat(intlLocaleOf(locale), { dateStyle: "full" }).format(new Date(iso));
+}
+
+/** "10:42 PM" for today, otherwise a short date — like a chat list. */
+export function formatChatTime(iso: string, locale: Locale, now = new Date()) {
+  const d = new Date(iso);
+  const sameDay = d.toDateString() === now.toDateString();
+  return new Intl.DateTimeFormat(intlLocaleOf(locale), sameDay ? { timeStyle: "short" } : { dateStyle: "short" }).format(d);
+}
+
 export function formatTime(date: Date, locale: Locale) {
   return new Intl.DateTimeFormat(intlLocaleOf(locale), { timeStyle: "short" }).format(date);
 }

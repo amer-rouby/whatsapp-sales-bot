@@ -4,6 +4,20 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 One version covers the whole product (backend `pom.xml` + frontend `package.json`).
 
+## [0.4.0] - 2026-11-08
+
+Conversations inbox: see every chat the bot had, as it happens.
+
+### Added
+- **Conversations page**: WhatsApp-like chat list (customer, last message, time, "bot replied" marker, test-chat badge) next to the full thread; on phones the list and the chat are separate screens.
+- **Chat thread**: messages in order with day separators, the bot's replies on the shop's side; refreshes by itself every few seconds (paused when the tab is hidden).
+- **API** `GET /api/conversations` (latest activity first, one query with the last message and count) and `GET /api/conversations/{id}`.
+- `scripts/start-bot.ps1`: starts database, backend and tunnel and points Meta's webhook at the new tunnel URL (for a personal machine or server, not a managed device).
+
+### Changed
+- One shared WhatsApp-style message bubble for the simulator and the inbox.
+- The simulator's channel id is part of the messaging module's public API (`SimulatorChannel`).
+
 ## [0.3.0] - 2026-11-08
 
 Sign-in for the dashboard: customer orders and the catalog are no longer open to anyone with the link.
@@ -66,6 +80,7 @@ First working version: an AI sales assistant on WhatsApp that sells only from th
 - **Architecture guards**: Spring Modulith module-boundary test, ESLint feature-boundary rules, OpenAPI-generated TypeScript types.
 - **Release version shown in the dashboard** and at `/actuator/info`.
 
+[0.4.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.4.0
 [0.3.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.3.0
 [0.2.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.2.0
 [0.1.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.1.0
