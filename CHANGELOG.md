@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 One version covers the whole product (backend `pom.xml` + frontend `package.json`).
 
+## [0.5.0] - 2026-11-08
+
+Take over any chat, and never miss a customer: reply from the dashboard and get notified with a sound.
+
+### Added
+- **Reply from the dashboard**: write to the customer from the chat page; the message goes out on WhatsApp and shows as "You" in the thread. Enter sends, Shift+Enter adds a line.
+- **Bot pause per chat**: the bot stops answering a chat as soon as you reply there (or when you press "Pause bot"); customer messages keep arriving in the inbox. "Hand back to bot" turns it on again, and the bot continues with your replies in its context. Paused chats are marked "You're replying" in the list.
+- **WhatsApp 24-hour rule**: if the customer's last message is older than 24 hours, the reply box explains why it is closed instead of failing.
+- **Notification bell** in the header: new customer messages and new orders with an unread badge (also in the browser tab title), a pop-up card and a sound. Different chimes for a message, an order, and something that needs you (a message in a chat you took over, or an order that needs review). Sound and device alerts can be switched on or off per browser; device alerts show while the tab is in the background (needs HTTPS or localhost).
+- **API** `POST /api/conversations/{id}/messages`, `PUT /api/conversations/{id}/bot`, `GET /api/notifications?after=`.
+
+### Changed
+- Every message records who wrote it: customer, bot, or a person from the shop (`V5` migration fills existing messages).
+- If you take over a chat while the bot is still thinking, the bot's reply is dropped, so the customer never gets two answers.
+
+### Upgrade note
+- Restart the backend right after updating: the `V5` migration and the new code must run together.
+
 ## [0.4.0] - 2026-11-08
 
 Conversations inbox: see every chat the bot had, as it happens.
@@ -80,6 +98,7 @@ First working version: an AI sales assistant on WhatsApp that sells only from th
 - **Architecture guards**: Spring Modulith module-boundary test, ESLint feature-boundary rules, OpenAPI-generated TypeScript types.
 - **Release version shown in the dashboard** and at `/actuator/info`.
 
+[0.5.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.5.0
 [0.4.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.4.0
 [0.3.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.3.0
 [0.2.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.2.0

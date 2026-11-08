@@ -22,6 +22,10 @@ public class Message extends BaseEntity {
     @Column(name = "direction", nullable = false)
     private Direction direction;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "author", nullable = false)
+    private Author author;
+
     /** Null for our own replies until WhatsApp returns an id. */
     @Column(name = "wa_message_id", unique = true)
     private String waMessageId;
@@ -32,23 +36,34 @@ public class Message extends BaseEntity {
     protected Message() {
     }
 
-    private Message(Conversation conversation, Direction direction, String waMessageId, String body) {
+    private Message(Conversation conversation, Direction direction, Author author, String waMessageId, String body) {
         this.conversation = conversation;
         this.direction = direction;
+        this.author = author;
         this.waMessageId = waMessageId;
         this.body = body;
     }
 
     public static Message inbound(Conversation conversation, String waMessageId, String body) {
-        return new Message(conversation, Direction.INBOUND, waMessageId, body);
+        return new Message(conversation, Direction.INBOUND, Author.CUSTOMER, waMessageId, body);
     }
 
+    /** The bot's reply. */
     public static Message outbound(Conversation conversation, String body) {
-        return new Message(conversation, Direction.OUTBOUND, null, body);
+        return new Message(conversation, Direction.OUTBOUND, Author.BOT, null, body);
+    }
+
+    /** A reply typed by a person from the shop in the dashboard. */
+    public static Message agentReply(Conversation conversation, String body) {
+        return new Message(conversation, Direction.OUTBOUND, Author.AGENT, null, body);
     }
 
     public Direction getDirection() {
         return direction;
+    }
+
+    public Author getAuthor() {
+        return author;
     }
 
     public String getBody() {
@@ -56,4 +71,7 @@ public class Message extends BaseEntity {
     }
 
     public enum Direction { INBOUND, OUTBOUND }
+
+    /** Who wrote the message: the customer, the bot, or a person from the shop. */
+    public enum Author { CUSTOMER, BOT, AGENT }
 }

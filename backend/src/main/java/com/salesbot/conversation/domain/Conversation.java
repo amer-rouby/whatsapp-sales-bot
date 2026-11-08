@@ -19,6 +19,10 @@ public class Conversation extends BaseEntity {
     @Column(name = "customer_name")
     private String customerName;
 
+    /** True while a person from the shop handles this chat: customer messages are stored, the bot stays quiet. */
+    @Column(name = "bot_paused", nullable = false)
+    private boolean botPaused;
+
     protected Conversation() {
     }
 
@@ -33,6 +37,18 @@ public class Conversation extends BaseEntity {
         if (name != null && !name.isBlank()) {
             this.customerName = name;
         }
+    }
+
+    public void pauseBot() {
+        this.botPaused = true;
+    }
+
+    public void resumeBot() {
+        this.botPaused = false;
+    }
+
+    public boolean isBotPaused() {
+        return botPaused;
     }
 
     public String getPhoneNumberId() {

@@ -9,7 +9,8 @@ An AI sales assistant on WhatsApp for online stores. It answers customers in the
 Customer (WhatsApp) → Meta Cloud API → /webhook (signature check) → event
   → conversation: store message → ask Gemini (catalog + history) → store reply → send
                                    └─ order confirmed? → orders (prices from catalog)
-Dashboard (Next.js) → /api/products, /api/orders, /dev/simulator
+Dashboard (Next.js) → /api/products, /api/orders, /api/conversations (inbox + shop replies),
+                      /api/notifications (bell, polled), /dev/simulator
 ```
 
 ## Structure
@@ -23,10 +24,11 @@ docker-compose.yml   PostgreSQL 17 on port 5442
 | Module | Role |
 |---|---|
 | `messaging` | WhatsApp webhook in, sender out, dashboard simulator. Publishes `InboundMessageReceived`. |
-| `conversation` | The reply loop; exactly-once per WhatsApp message. |
+| `conversation` | The reply loop (exactly-once per WhatsApp message), the inbox, and the shop's own replies (pauses the bot per chat, WhatsApp 24-hour rule). `CustomerMessages` is its read API. |
+| `notifications` | One newest-first feed of customer messages and orders for the dashboard bell. |
 | `ai` | `AiReplyProvider` — Gemini with a model fallback chain, or `echo` for local work. Structured JSON reply + order. |
 | `catalog` | Products API; `CatalogQuery` is what the bot may sell. |
-| `orders` | Orders API; `OrderPlacement` records confirmed orders with catalog prices. |
+| `orders` | Orders API; `OrderPlacement` records confirmed orders with catalog prices, `RecentOrders` feeds notifications. |
 | `merchant` | Reserved for multi-store accounts. |
 | `shared` | Base entity, ProblemDetail errors, security, async. |
 

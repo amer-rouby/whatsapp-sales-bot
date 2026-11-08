@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conversations/{id}/bot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setBot"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/webhook": {
         parameters: {
             query?: never;
@@ -36,22 +52,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/dev/simulator/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["send"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/products": {
         parameters: {
             query?: never;
@@ -62,6 +62,22 @@ export interface paths {
         get: operations["list"];
         put?: never;
         post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conversations/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reply"];
         delete?: never;
         options?: never;
         head?: never;
@@ -116,7 +132,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/conversations": {
+    "/api/notifications": {
         parameters: {
             query?: never;
             header?: never;
@@ -124,6 +140,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["list_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -194,13 +226,22 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
-        SimulatorMessage: {
-            customerId: string;
-            customerName?: string;
+        BotStateRequest: {
+            paused: boolean;
+        };
+        AgentReplyRequest: {
             text: string;
         };
-        SimulatorReply: {
-            reply?: string;
+        ChatMessage: {
+            /** Format: uuid */
+            id?: string;
+            /** @enum {string} */
+            direction?: "INBOUND" | "OUTBOUND";
+            /** @enum {string} */
+            author?: "CUSTOMER" | "BOT" | "AGENT";
+            body?: string;
+            /** Format: date-time */
+            sentAt?: string;
         };
         LoginRequest: {
             email: string;
@@ -244,12 +285,36 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
+        NotificationItem: {
+            id?: string;
+            /** @enum {string} */
+            type?: "CUSTOMER_MESSAGE" | "NEW_ORDER";
+            /** Format: uuid */
+            conversationId?: string;
+            /** Format: uuid */
+            orderId?: string;
+            customerName?: string;
+            customerContact?: string;
+            preview?: string;
+            total?: number;
+            currency?: string;
+            needsAttention?: boolean;
+            simulated?: boolean;
+            /** Format: date-time */
+            at?: string;
+        };
+        NotificationPage: {
+            /** Format: date-time */
+            serverTime?: string;
+            items?: components["schemas"]["NotificationItem"][];
+        };
         ConversationSummary: {
             /** Format: uuid */
             id?: string;
             customerName?: string;
             customerWaId?: string;
             simulated?: boolean;
+            botPaused?: boolean;
             lastMessage?: string;
             /** @enum {string} */
             lastDirection?: "INBOUND" | "OUTBOUND";
@@ -258,21 +323,14 @@ export interface components {
             /** Format: int64 */
             messageCount?: number;
         };
-        ChatMessage: {
-            /** Format: uuid */
-            id?: string;
-            /** @enum {string} */
-            direction?: "INBOUND" | "OUTBOUND";
-            body?: string;
-            /** Format: date-time */
-            sentAt?: string;
-        };
         ConversationDetail: {
             /** Format: uuid */
             id?: string;
             customerName?: string;
             customerWaId?: string;
             simulated?: boolean;
+            botPaused?: boolean;
+            canReply?: boolean;
             messages?: components["schemas"]["ChatMessage"][];
         };
     };
@@ -352,6 +410,30 @@ export interface operations {
             };
         };
     };
+    setBot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BotStateRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     verify: {
         parameters: {
             query: {
@@ -400,30 +482,6 @@ export interface operations {
             };
         };
     };
-    send: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SimulatorMessage"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SimulatorReply"];
-                };
-            };
-        };
-    };
     list: {
         parameters: {
             query?: never;
@@ -464,6 +522,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ProductResponse"];
+                };
+            };
+        };
+    };
+    reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentReplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ChatMessage"];
                 };
             };
         };
@@ -539,6 +623,28 @@ export interface operations {
         };
     };
     list_2: {
+        parameters: {
+            query?: {
+                after?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationPage"];
+                };
+            };
+        };
+    };
+    list_3: {
         parameters: {
             query?: never;
             header?: never;

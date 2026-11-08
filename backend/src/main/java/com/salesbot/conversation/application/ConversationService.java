@@ -71,10 +71,26 @@ class ConversationService {
             return;
         }
 
+        if (stored.botPaused()) {
+            log.info("Bot paused in conversation {}, message stored for the shop to answer", stored.conversationId());
+            return;
+        }
+
         AiReply reply = generateReply(stored, event.text());
 
-        tx.executeWithoutResult(status -> messages.save(
-                Message.outbound(conversations.getReferenceById(stored.conversationId()), reply.text())));
+        // the shop may have taken over while the AI was thinking: then its reply wins and the bot's is dropped
+        Boolean saved = tx.execute(status -> {
+            Conversation conversation = conversations.findById(stored.conversationId()).orElseThrow();
+            if (conversation.isBotPaused()) {
+                return false;
+            }
+            messages.save(Message.outbound(conversation, reply.text()));
+            return true;
+        });
+        if (!Boolean.TRUE.equals(saved)) {
+            log.info("Shop took over conversation {} during the AI call, bot reply dropped", stored.conversationId());
+            return;
+        }
         if (reply.order() != null) {
             recordOrder(stored, event, reply.order());
         }
@@ -114,7 +130,7 @@ class ConversationService {
         if (messages.insertInboundIfNew(conversation.getId(), event.waMessageId(), event.text()) == 0) {
             return null;
         }
-        return new Stored(conversation.getId(), conversation.getCustomerName(), history);
+        return new Stored(conversation.getId(), conversation.getCustomerName(), history, conversation.isBotPaused());
     }
 
     private AiReply generateReply(Stored stored, String customerText) {
@@ -150,6 +166,6 @@ class ConversationService {
     }
 
     /** What phase 1 hands to the rest of the loop (plain data, no managed entities). */
-    private record Stored(UUID conversationId, String customerName, List<ReplyRequest.Turn> history) {
+    private record Stored(UUID conversationId, String customerName, List<ReplyRequest.Turn> history, boolean botPaused) {
     }
 }

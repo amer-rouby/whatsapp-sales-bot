@@ -19,7 +19,17 @@ const VERSION = process.env.NEXT_PUBLIC_APP_VERSION;
  * The app frame (same layout language as the Tawasol web app):
  * brand-colored sidebar (drawer on mobile) + brand-colored header + page area.
  */
-export function AppShell({ theme, user, children }: { theme: Theme; user: SessionUser | null; children: React.ReactNode }) {
+export function AppShell({
+  theme,
+  user,
+  headerActions,
+  children,
+}: {
+  theme: Theme;
+  user: SessionUser | null;
+  headerActions?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   const { t } = useI18n();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -97,6 +107,7 @@ export function AppShell({ theme, user, children }: { theme: Theme; user: Sessio
             </span>
             {t.header.botOnline}
           </span>
+          {headerActions}
           <ThemeSwitcher current={theme} />
           <LanguageSwitcher />
           {user && <UserMenu user={user} />}

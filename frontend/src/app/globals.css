@@ -125,6 +125,20 @@ html[dir="rtl"] [data-ltr] {
   animation: fade-up 0.25s ease-out both;
 }
 
+/* the header bell swings when something new arrives */
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-12deg); }
+  45% { transform: rotate(9deg); }
+  60% { transform: rotate(-6deg); }
+  75% { transform: rotate(3deg); }
+}
+@utility animate-bell-ring {
+  transform-origin: top center;
+  animation: bell-ring 1.2s ease-in-out 2;
+}
+
 /* people who ask their OS for less motion get none */
 @media (prefers-reduced-motion: reduce) {
   *,

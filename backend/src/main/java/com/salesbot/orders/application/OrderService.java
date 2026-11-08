@@ -4,6 +4,7 @@ import com.salesbot.catalog.CatalogQuery;
 import com.salesbot.catalog.ProductSummary;
 import com.salesbot.orders.OrderPlacement;
 import com.salesbot.orders.PlaceOrder;
+import com.salesbot.orders.RecentOrders;
 import com.salesbot.orders.domain.Order;
 import com.salesbot.orders.domain.OrderStatus;
 import com.salesbot.orders.infrastructure.OrderRepository;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Limit;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional
-public class OrderService implements OrderPlacement {
+public class OrderService implements OrderPlacement, RecentOrders {
 
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
     /** A second confirmation of the same items within this window is the same order, not a new one. */
@@ -69,6 +71,15 @@ public class OrderService implements OrderPlacement {
         return orders.findByConversationIdAndStatusAndCreatedAtAfter(candidate.getConversationId(),
                         OrderStatus.NEW, Instant.now().minus(DUPLICATE_WINDOW)).stream()
                 .anyMatch(existing -> existing.itemsFingerprint().equals(fingerprint));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderNotice> since(Instant after, int limit) {
+        return orders.findByCreatedAtAfterOrderByCreatedAtDesc(after, Limit.of(limit)).stream()
+                .map(o -> new OrderNotice(o.getId(), o.getConversationId(), o.getCustomerName(), o.getCustomerPhone(),
+                        o.getTotal(), o.getCurrency(), o.isNeedsReview(), o.getCreatedAt()))
+                .toList();
     }
 
     @Transactional(readOnly = true)
