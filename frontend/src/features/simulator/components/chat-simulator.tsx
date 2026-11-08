@@ -1,14 +1,14 @@
 "use client";
 
 import { Bot, RotateCcw, SendHorizontal, User } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatBubble, ChatNotice } from "@/shared/components/chat-bubble";
 import { useI18n } from "@/shared/i18n/provider";
 import { ApiError } from "@/shared/lib/api-client";
 import { errorMessage } from "@/shared/lib/errors";
 import { formatTime } from "@/shared/lib/format";
 import { Button, Card, Input } from "@/shared/ui";
-import { sendSimulatorMessage } from "../api/simulator-api";
+import { pendingSimulatorReplies, sendSimulatorMessage } from "../api/simulator-api";
 
 type Author = "customer" | "bot" | "system";
 
@@ -17,7 +17,7 @@ interface ChatMessage {
   author: Author;
   text: string;
   at: Date;
-  /** customer messages only: has the bot answered yet? */
+  /** customer messages only: has the shop's number (bot or a person) answered yet? */
   answered?: boolean;
 }
 
@@ -25,6 +25,9 @@ interface ChatMessage {
 function newCustomerId() {
   return `sim-${crypto.randomUUID().slice(0, 8)}`;
 }
+
+/** How often the simulator checks for replies the shop wrote in the dashboard. */
+const PENDING_POLL_MS = 3000;
 
 export function ChatSimulator() {
   const { t, locale } = useI18n();
@@ -35,6 +38,11 @@ export function ChatSimulator() {
   const [sending, setSending] = useState(false);
   const nextId = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
+  /** The chat on screen, so a check that finishes after "New chat" doesn't land in the new chat. */
+  const currentChat = useRef(customerId);
+  useEffect(() => {
+    currentChat.current = customerId;
+  }, [customerId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -46,9 +54,31 @@ export function ChatSimulator() {
     return id;
   }
 
-  function markAnswered(id: number) {
-    setMessages((current) => current.map((m) => (m.id === id ? { ...m, answered: true } : m)));
-  }
+  /** Shows what the shop's number sent and marks the customer's messages as read. */
+  const receive = useCallback((replies: string[]) => {
+    setMessages((current) => [
+      ...current.map((m) => (m.author === "customer" ? { ...m, answered: true } : m)),
+      ...replies.map((text) => ({ id: nextId.current++, author: "bot" as const, text, at: new Date() })),
+    ]);
+  }, []);
+
+  // replies the shop writes in the dashboard reach this chat outside the send/reply cycle: check for them
+  const hasMessages = messages.length > 0;
+  useEffect(() => {
+    if (!hasMessages || sending) return;
+    const check = async () => {
+      if (document.visibilityState === "hidden") return;
+      try {
+        const replies = await pendingSimulatorReplies(customerId);
+        // delivered even if a send started meanwhile: the server already handed these over
+        if (replies.length > 0 && currentChat.current === customerId) receive(replies);
+      } catch {
+        // a missed check is retried on the next tick
+      }
+    };
+    const timer = window.setInterval(check, PENDING_POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [customerId, hasMessages, sending, receive]);
 
   function failureText(error: unknown) {
     if (error instanceof ApiError && error.problem.status === 504) return t.simulator.errors.timeout;
@@ -61,13 +91,13 @@ export function ChatSimulator() {
     const text = draft.trim();
     if (!text || sending) return;
 
-    const id = add("customer", text);
+    add("customer", text);
     setDraft("");
     setSending(true);
     try {
       const reply = await sendSimulatorMessage({ customerId, customerName, text });
-      markAnswered(id);
-      add("bot", reply);
+      // null: the shop took this chat over, so the bot stays silent and the shop's reply comes by polling
+      if (reply !== null) receive([reply]);
     } catch (error) {
       add("system", failureText(error));
     } finally {

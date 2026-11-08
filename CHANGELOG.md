@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 One version covers the whole product (backend `pom.xml` + frontend `package.json`).
 
+## [0.5.1] - 2026-11-08
+
+Fixes found while trying v0.5.0 end to end.
+
+### Fixed
+- **Simulator in a chat you took over**: the customer's message no longer ends in an error while the bot is paused, and your replies from the dashboard now appear in the simulator chat within a few seconds.
+- **Unread count in the browser tab title** ("(3) Bayaa") no longer disappears after moving between pages or when the page refreshes itself.
+- **Pop-up notifications** now appear at the top, under the header, so they never cover the reply box's send button.
+
+### Added
+- **API** `GET /dev/simulator/messages/{customerId}`: messages the shop sent to a simulator chat that it hasn't shown yet.
+
 ## [0.5.0] - 2026-11-08
 
 Take over any chat, and never miss a customer: reply from the dashboard and get notified with a sound.
@@ -98,6 +110,7 @@ First working version: an AI sales assistant on WhatsApp that sells only from th
 - **Architecture guards**: Spring Modulith module-boundary test, ESLint feature-boundary rules, OpenAPI-generated TypeScript types.
 - **Release version shown in the dashboard** and at `/actuator/info`.
 
+[0.5.1]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.5.1
 [0.5.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.5.0
 [0.4.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.4.0
 [0.3.0]: https://github.com/amer-rouby/whatsapp-sales-bot/releases/tag/v0.3.0
