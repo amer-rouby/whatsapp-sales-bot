@@ -1,9 +1,7 @@
 import { apiClient } from "@/shared/lib/api-client";
 import type { Order, OrderStatus } from "../types";
 
-const BASE = "/api/orders";
-
+/** Changes from client components (through proxy.ts). Reads live in orders-queries.ts. */
 export const ordersApi = {
-  list: () => apiClient.get<Order[]>(BASE, { cache: "no-store" }),
-  changeStatus: (id: string, status: OrderStatus) => apiClient.patch<Order>(`${BASE}/${id}/status`, { status }),
+  changeStatus: (id: string, status: OrderStatus) => apiClient.patch<Order>(`/api/orders/${id}/status`, { status }),
 };

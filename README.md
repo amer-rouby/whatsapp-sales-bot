@@ -28,7 +28,7 @@ docker-compose.yml   PostgreSQL 17 on port 5442
 | `catalog` | Products API; `CatalogQuery` is what the bot may sell. |
 | `orders` | Orders API; `OrderPlacement` records confirmed orders with catalog prices. |
 | `merchant` | Reserved for multi-store accounts. |
-| `shared` | Base entity, ProblemDetail errors, CORS, async. |
+| `shared` | Base entity, ProblemDetail errors, security, async. |
 
 A module's root package is its public API; sub-packages are internal. `ModularityTests` fails the build on violations or cycles.
 
@@ -46,7 +46,9 @@ cd backend && ./mvnw spring-boot:run
 cd frontend && npm install && npm run dev
 ```
 Local settings go in `backend/.env` (gitignored, same keys as `.env.example`, all prefixed `SALESBOT_`).
-With no keys the bot runs in `echo` mode and the dashboard simulator at `/simulator` works out of the box.
+Required for the dashboard: `SALESBOT_JWT_SECRET` (at least 32 characters, e.g. `openssl rand -hex 32`) and, for the first start,
+`SALESBOT_ADMIN_EMAIL` + `SALESBOT_ADMIN_PASSWORD` (at least 10 characters) — that account is created once and is how you sign in.
+With no Gemini key the bot runs in `echo` mode and the dashboard simulator at `/simulator` works out of the box.
 
 ## Tests
 ```bash

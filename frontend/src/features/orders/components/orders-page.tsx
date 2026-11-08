@@ -7,7 +7,7 @@ import { errorMessage } from "@/shared/lib/errors";
 import { formatDateTime, formatMoney } from "@/shared/lib/format";
 import { load } from "@/shared/lib/load";
 import { Badge } from "@/shared/ui";
-import { ordersApi } from "../api/orders-api";
+import { ordersQueries } from "../api/orders-queries";
 import type { Order } from "../types";
 import { OrderLines } from "./order-lines";
 import { OrderStatusSelect } from "./order-status-select";
@@ -64,7 +64,7 @@ function config(t: Dictionary, locale: Locale): ListPageConfig<Order> {
 
 export async function OrdersPage() {
   const { t, locale } = await getI18n();
-  const result = await load(ordersApi.list);
+  const result = await load(ordersQueries.list);
   if (!result.ok) {
     return (
       <ListPage config={config(t, locale)} error={{ title: t.orders.loadError, description: errorMessage(result.error, t) }} />

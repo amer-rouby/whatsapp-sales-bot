@@ -28,11 +28,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** Customer confirms in chat → order appears on the dashboard with catalog prices. */
 @IntegrationTest
+@WithMockUser // these tests are about the feature, not about login (see SecurityIntegrationTest)
 @AutoConfigureMockMvc
 class OrderFlowIntegrationTest {
 
@@ -75,7 +77,7 @@ class OrderFlowIntegrationTest {
 
         customerSays("201000000001", "أيوه أكد");
         verify(sender, timeout(5_000)).sendText("PN_ORD", "201000000001", "تم تأكيد الأوردر");
-        await().atMost(Duration.ofSeconds(5)).until(() -> ordersFor("201000000001") == 1);
+        await().pollInSameThread().atMost(Duration.ofSeconds(5)).until(() -> ordersFor("201000000001") == 1);
 
         mvc.perform(get("/api/orders"))
                 .andExpect(jsonPath("$[?(@.customerPhone=='201000000001')].customerName").value("عامر"))

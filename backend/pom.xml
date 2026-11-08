@@ -11,7 +11,7 @@
 	<groupId>com.salesbot</groupId>
 	<artifactId>backend</artifactId>
 	<!-- Keep in sync with frontend/package.json and CHANGELOG.md (one version for the whole product) -->
-	<version>0.2.0</version>
+	<version>0.3.0</version>
 	<name>backend</name>
 	<description>WhatsApp Sales Bot backend</description>
 	<url/>
@@ -52,6 +52,15 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<!-- Dashboard login: JWT bearer tokens validated by Spring Security's resource server -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
 		<!-- Boot 4: RestClient.Builder auto-config lives in its own starter (Gemini + WhatsApp calls) -->
 		<dependency>
@@ -119,6 +128,11 @@
 		<dependency>
 			<groupId>org.springframework.modulith</groupId>
 			<artifactId>spring-modulith-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

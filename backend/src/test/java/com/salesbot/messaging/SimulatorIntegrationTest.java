@@ -10,10 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** The simulator runs a message through the real pipeline and returns the bot's reply. */
 @IntegrationTest
+@WithMockUser // these tests are about the feature, not about login (see SecurityIntegrationTest)
 @TestPropertySource(properties = "salesbot.simulator.enabled=true")
 @AutoConfigureMockMvc
 class SimulatorIntegrationTest {

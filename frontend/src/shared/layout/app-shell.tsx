@@ -6,10 +6,12 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useI18n } from "@/shared/i18n/provider";
 import { cn } from "@/shared/lib/cn";
+import type { SessionUser } from "@/shared/auth/constants";
 import type { Theme } from "@/shared/preferences/theme";
 import { activeNavItem } from "./nav-items";
 import { LanguageSwitcher, ThemeSwitcher } from "./preference-switchers";
 import { SidebarNav } from "./sidebar-nav";
+import { UserMenu } from "./user-menu";
 
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION;
 
@@ -17,7 +19,7 @@ const VERSION = process.env.NEXT_PUBLIC_APP_VERSION;
  * The app frame (same layout language as the Tawasol web app):
  * brand-colored sidebar (drawer on mobile) + brand-colored header + page area.
  */
-export function AppShell({ theme, children }: { theme: Theme; children: React.ReactNode }) {
+export function AppShell({ theme, user, children }: { theme: Theme; user: SessionUser | null; children: React.ReactNode }) {
   const { t } = useI18n();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -97,6 +99,7 @@ export function AppShell({ theme, children }: { theme: Theme; children: React.Re
           </span>
           <ThemeSwitcher current={theme} />
           <LanguageSwitcher />
+          {user && <UserMenu user={user} />}
         </header>
 
         <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6 lg:p-8">{children}</main>

@@ -17,8 +17,17 @@ import org.springframework.context.annotation.Import;
 @SpringBootTest(properties = {
         "salesbot.ai.provider=echo",
         "salesbot.whatsapp.sender=log",
-        "salesbot.simulator.enabled=false"
+        "salesbot.simulator.enabled=false",
+        "salesbot.security.jwt-secret=" + IntegrationTest.JWT_SECRET,
+        "salesbot.admin.email=" + IntegrationTest.ADMIN_EMAIL,
+        "salesbot.admin.name=Test Owner",
+        "salesbot.admin.password=" + IntegrationTest.ADMIN_PASSWORD
 })
 @Import(TestcontainersConfiguration.class)
 public @interface IntegrationTest {
+
+    /** Test-only values; real ones live in backend/.env. */
+    String JWT_SECRET = "test-secret-for-integration-tests-only-0123456789";
+    String ADMIN_EMAIL = "owner@test.local";
+    String ADMIN_PASSWORD = "correct-horse-battery";
 }
