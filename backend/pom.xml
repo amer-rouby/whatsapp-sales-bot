@@ -11,7 +11,7 @@
 	<groupId>com.salesbot</groupId>
 	<artifactId>backend</artifactId>
 	<!-- Keep in sync with frontend/package.json and CHANGELOG.md (one version for the whole product) -->
-	<version>0.5.0</version>
+	<version>0.5.1</version>
 	<name>backend</name>
 	<description>WhatsApp Sales Bot backend</description>
 	<url/>

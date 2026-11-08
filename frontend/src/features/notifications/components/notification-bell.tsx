@@ -86,10 +86,21 @@ export function NotificationBell() {
   const unread = items.filter((i) => Date.parse(i.at) > seenMs).length;
 
   // "(3) Bayaa": the count shows even when the tab is in the background
+  // Next.js rewrites the title on navigation and router.refresh(), so watch it and put the count back.
   useEffect(() => {
-    const base = document.title.replace(/^\(\d+\+?\) /, "");
-    document.title = unread > 0 ? `(${unread > 9 ? "9+" : unread}) ${base}` : base;
-  }, [unread, pathname]);
+    const prefix = unread > 0 ? `(${unread > 9 ? "9+" : unread}) ` : "";
+    const apply = () => {
+      const wanted = prefix + document.title.replace(/^\(\d+\+?\) /, "");
+      if (document.title !== wanted) document.title = wanted; // no change, no new mutation: no loop
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => {
+      observer.disconnect();
+      document.title = document.title.replace(/^\(\d+\+?\) /, "");
+    };
+  }, [unread]);
 
   // browsers only allow sound after a user gesture: unlock on the first click/keypress anywhere
   useEffect(() => {
@@ -256,7 +267,8 @@ export function NotificationBell() {
       )}
 
       {toasts.length > 0 && (
-        <div aria-live="polite" className="fixed bottom-4 end-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2">
+        // top, under the header: at the bottom they would cover the chat's reply box
+        <div aria-live="polite" className="fixed end-4 top-20 z-[25] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2">
           {toasts.map((item) => (
             <div key={item.id} className="card relative overflow-hidden text-foreground shadow-2xl animate-fade-up">
               <span className={cn("absolute inset-y-0 start-0 w-1", item.needsAttention ? "bg-gold-500" : "bg-primary")} aria-hidden />
